@@ -1,56 +1,194 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Tray, ipcMain, Notification, screen } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+import Store from 'electron-store';
+import { createTrayIcons } from './tray-icons';
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
 }
 
-const createWindow = () => {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+interface Settings {
+  focusMinutes: number;
+  breakMinutes: number;
+  lastOpenedDate: string;
+}
+
+interface SessionRecord {
+  startedAt: string;
+  durationSeconds: number;
+}
+
+const settingsStore = new Store<Settings>({
+  name: 'settings',
+  defaults: {
+    focusMinutes: 20,
+    breakMinutes: 5,
+    lastOpenedDate: '',
+  },
+});
+
+const sessionStore = new Store<{ sessions: SessionRecord[] }>({
+  name: 'sessions',
+  defaults: { sessions: [] },
+});
+
+let tray: Tray | null = null;
+let popoverWindow: BrowserWindow | null = null;
+let trayIcons: ReturnType<typeof createTrayIcons> | null = null;
+
+function createPopoverWindow() {
+  popoverWindow = new BrowserWindow({
+    width: 260,
+    height: 390,
+    show: false,
+    frame: false,
+    resizable: false,
+    movable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    transparent: true,
+    vibrancy: 'popover',
+    visualEffectState: 'active',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   });
 
-  // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    popoverWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(
+    popoverWindow.loadFile(
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     );
   }
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-};
+  popoverWindow.on('blur', () => {
+    popoverWindow?.hide();
+  });
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+  popoverWindow.on('closed', () => {
+    popoverWindow = null;
+  });
+}
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+function positionPopover() {
+  if (!tray || !popoverWindow) return;
+
+  const trayBounds = tray.getBounds();
+  const windowBounds = popoverWindow.getBounds();
+  const display = screen.getDisplayNearestPoint({ x: trayBounds.x, y: trayBounds.y });
+  const workArea = display.workArea;
+
+  let x = Math.round(trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2);
+  let y = Math.round(trayBounds.y + trayBounds.height + 4);
+
+  // Keep within screen bounds
+  x = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - windowBounds.width));
+  if (y + windowBounds.height > workArea.y + workArea.height) {
+    y = Math.round(trayBounds.y - windowBounds.height - 4);
+  }
+
+  popoverWindow.setPosition(x, y, false);
+}
+
+function togglePopover() {
+  if (!popoverWindow) return;
+
+  if (popoverWindow.isVisible()) {
+    popoverWindow.hide();
+  } else {
+    positionPopover();
+    popoverWindow.show();
+    popoverWindow.focus();
+  }
+}
+
+function registerIpcHandlers() {
+  ipcMain.on('timer:state-update', (_event, state: {
+    mode: 'focus' | 'break';
+    isRunning: boolean;
+  }) => {
+    if (!tray || !trayIcons) return;
+    if (!state.isRunning) {
+      tray.setImage(trayIcons.idle);
+    } else if (state.mode === 'focus') {
+      tray.setImage(trayIcons.focus);
+    } else {
+      tray.setImage(trayIcons.break);
+    }
+  });
+
+  ipcMain.on('timer:completed', (_event, mode: 'focus' | 'break') => {
+    if (mode === 'focus') {
+      new Notification({
+        title: 'Focus Complete!',
+        body: 'Time to take a break.',
+        sound: 'default',
+      }).show();
+    } else {
+      new Notification({
+        title: 'Break Over!',
+        body: 'Time to get back to work.',
+        sound: 'default',
+      }).show();
+    }
+  });
+
+  ipcMain.handle('session:record', (_event, session: SessionRecord) => {
+    const sessions = sessionStore.get('sessions');
+    sessions.push(session);
+    sessionStore.set('sessions', sessions);
+  });
+
+  ipcMain.handle('session:get-today', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const sessions = sessionStore.get('sessions');
+    return sessions.filter(s => s.startedAt.startsWith(today));
+  });
+
+  ipcMain.handle('settings:get', () => {
+    return {
+      focusMinutes: settingsStore.get('focusMinutes'),
+      breakMinutes: settingsStore.get('breakMinutes'),
+      lastOpenedDate: settingsStore.get('lastOpenedDate'),
+    };
+  });
+
+  ipcMain.handle('settings:set', (_event, updates: Partial<Settings>) => {
+    if (updates.focusMinutes !== undefined) settingsStore.set('focusMinutes', updates.focusMinutes);
+    if (updates.breakMinutes !== undefined) settingsStore.set('breakMinutes', updates.breakMinutes);
+    if (updates.lastOpenedDate !== undefined) settingsStore.set('lastOpenedDate', updates.lastOpenedDate);
+  });
+
+  ipcMain.on('app:quit', () => {
     app.quit();
+  });
+}
+
+app.on('ready', () => {
+  if (process.platform === 'darwin') {
+    app.dock.hide();
   }
+
+  trayIcons = createTrayIcons();
+  tray = new Tray(trayIcons.idle);
+  tray.setToolTip('Pomodoro');
+
+  if (process.platform === 'darwin') {
+    tray.setIgnoreDoubleClickEvents(true);
+  }
+
+  tray.on('click', () => {
+    togglePopover();
+  });
+
+  registerIpcHandlers();
+  createPopoverWindow();
 });
 
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+app.on('window-all-closed', () => {
+  // Do not quit on window close — tray app stays alive
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
