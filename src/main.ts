@@ -1,4 +1,5 @@
-import { app, BrowserWindow, Tray, ipcMain, Notification, screen } from 'electron';
+import { app, BrowserWindow, Tray, ipcMain, screen } from 'electron';
+import { exec } from 'node:child_process';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import Store from 'electron-store';
@@ -36,6 +37,13 @@ const sessionStore = new Store<{ sessions: SessionRecord[] }>({
 let tray: Tray | null = null;
 let popoverWindow: BrowserWindow | null = null;
 let trayIcons: ReturnType<typeof createTrayIcons> | null = null;
+
+function showNotification(title: string, body: string) {
+  if (process.platform !== 'darwin') return;
+  const t = title.replace(/'/g, "'\\''");
+  const b = body.replace(/'/g, "'\\''");
+  exec(`osascript -e 'display notification "${b}" with title "${t}" sound name "default"'`);
+}
 
 function createPopoverWindow() {
   popoverWindow = new BrowserWindow({
@@ -123,18 +131,15 @@ function registerIpcHandlers() {
   });
 
   ipcMain.on('timer:completed', (_event, mode: 'focus' | 'break') => {
+    if (popoverWindow && !popoverWindow.isVisible()) {
+      positionPopover();
+      popoverWindow.show();
+      popoverWindow.focus();
+    }
     if (mode === 'focus') {
-      new Notification({
-        title: 'Focus Complete!',
-        body: 'Time to take a break.',
-        sound: 'default',
-      }).show();
+      showNotification('Focus Complete!', 'Time to take a break.');
     } else {
-      new Notification({
-        title: 'Break Over!',
-        body: 'Time to get back to work.',
-        sound: 'default',
-      }).show();
+      showNotification('Break Over!', 'Time to get back to work.');
     }
   });
 

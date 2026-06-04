@@ -130,6 +130,9 @@ export default function App() {
       />
       <hr className="divider" />
       <DailyStats sessions={state.todaySessions} />
+      <button onClick={() => window.electronAPI.notifyCompletion('focus')} style={{ marginTop: 8, fontSize: 11, opacity: 0.5 }}>
+        test notification
+      </button>
     </div>
   );
 }

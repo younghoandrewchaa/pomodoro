@@ -3,12 +3,26 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const src = readFileSync(join(__dirname, '../../src/main.ts'), 'utf-8');
+
 // Regression test: Chromium throttles setInterval in hidden windows by default,
 // freezing the timer when the popover is dismissed. backgroundThrottling: false
 // prevents this. This test ensures the config is never accidentally removed.
 describe('BrowserWindow webPreferences', () => {
   it('disables backgroundThrottling so the timer keeps running when the popover is hidden', () => {
-    const src = readFileSync(join(__dirname, '../../src/main.ts'), 'utf-8');
     expect(src).toContain('backgroundThrottling: false');
+  });
+});
+
+// Regression test: Electron Notification API silently fails in unsigned LSUIElement apps.
+// osascript is used instead — it runs through Apple's signed binary and works in dev builds.
+describe('timer:completed handler', () => {
+  it('shows the popover when the timer completes', () => {
+    expect(src).toContain('popoverWindow.show()');
+  });
+
+  it('uses osascript for notifications instead of the broken Electron Notification API', () => {
+    expect(src).toContain('display notification');
+    expect(src).not.toContain('new Notification(');
   });
 });
