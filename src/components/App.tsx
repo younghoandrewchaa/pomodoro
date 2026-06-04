@@ -4,10 +4,19 @@ import TimerDisplay from './TimerDisplay';
 import ProgressBar from './ProgressBar';
 import ControlButtons from './ControlButtons';
 import SkipLink from './SkipLink';
-import Footer from './Footer';
 import DailyStats from './DailyStats';
 import SettingsPanel from './SettingsPanel';
-import { reducer, initialState, toSeconds, type SessionRecord } from './timerReducer';
+import { reducer, initialState, toSeconds } from './timerReducer';
+
+function MoreIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="5" r="2" />
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="12" cy="19" r="2" />
+    </svg>
+  );
+}
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -89,7 +98,7 @@ export default function App() {
 
   if (state.showSettings) {
     return (
-      <div className="app">
+      <div className="app app--settings">
         <SettingsPanel
           focusMinutes={state.focusMinutes}
           breakMinutes={state.breakMinutes}
@@ -103,36 +112,48 @@ export default function App() {
 
   return (
     <div className="app">
-      <ModeLabel mode={state.mode} />
-      <TimerDisplay secondsRemaining={state.secondsRemaining} />
-      <ProgressBar
-        secondsRemaining={state.secondsRemaining}
-        totalSeconds={totalSeconds}
-        mode={state.mode}
-      />
-      <ControlButtons
-        isRunning={state.isRunning}
-        mode={state.mode}
-        onPlay={() => dispatch({ type: 'PLAY' })}
-        onPause={() => dispatch({ type: 'PAUSE' })}
-        onReset={() => dispatch({ type: 'RESET' })}
-      />
-      <SkipLink
-        mode={state.mode}
-        isRunning={state.isRunning}
-        onSkipToBreak={() => dispatch({ type: 'SKIP_TO_BREAK' })}
-        onSkipToFocus={() => dispatch({ type: 'SKIP_TO_FOCUS' })}
-      />
-      <hr className="divider" />
-      <Footer
-        onToggleSettings={() => dispatch({ type: 'TOGGLE_SETTINGS' })}
-        onQuit={() => window.electronAPI.quit()}
-      />
-      <hr className="divider" />
-      <DailyStats sessions={state.todaySessions} />
-      <button onClick={() => window.electronAPI.notifyCompletion('focus')} style={{ marginTop: 8, fontSize: 11, opacity: 0.5 }}>
-        test notification
-      </button>
+      <header className="app-header">
+        <h1 className="app-title">Pomodoro</h1>
+        <button
+          className="app-menu-btn"
+          onClick={() => dispatch({ type: 'TOGGLE_SETTINGS' })}
+          aria-label="Settings"
+        >
+          <MoreIcon />
+        </button>
+      </header>
+
+      <main className="timer-stage">
+        <ModeLabel mode={state.mode} />
+        <div className="timer-ring-shell">
+          <ProgressBar
+            secondsRemaining={state.secondsRemaining}
+            totalSeconds={totalSeconds}
+            mode={state.mode}
+          />
+          <TimerDisplay secondsRemaining={state.secondsRemaining} />
+        </div>
+        <ControlButtons
+          isRunning={state.isRunning}
+          mode={state.mode}
+          onPlay={() => dispatch({ type: 'PLAY' })}
+          onPause={() => dispatch({ type: 'PAUSE' })}
+          onReset={() => dispatch({ type: 'RESET' })}
+        />
+      </main>
+
+      <footer className="app-footer">
+        <SkipLink
+          mode={state.mode}
+          isRunning={state.isRunning}
+          onSkipToBreak={() => dispatch({ type: 'SKIP_TO_BREAK' })}
+          onSkipToFocus={() => dispatch({ type: 'SKIP_TO_FOCUS' })}
+        />
+        <DailyStats sessions={state.todaySessions} />
+        <button className="quit-btn" onClick={() => window.electronAPI.quit()}>
+          Quit
+        </button>
+      </footer>
     </div>
   );
 }

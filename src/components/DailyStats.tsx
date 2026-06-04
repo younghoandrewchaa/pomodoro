@@ -11,13 +11,20 @@ function formatTime(totalSeconds: number): string {
 
 export default function DailyStats({ sessions }: Props) {
   const totalSeconds = sessions.reduce((sum, s) => sum + s.durationSeconds, 0);
+  const completedDots = Math.min(sessions.length, 4);
+
   return (
     <div className="daily-stats">
-      <span className="daily-stats__left">
-        🍅 {sessions.length} session{sessions.length !== 1 ? 's' : ''}
-      </span>
-      <span className="daily-stats__right">
-        {formatTime(totalSeconds)} today
+      <div className="session-dots" aria-label={`${sessions.length} completed sessions`}>
+        {Array.from({ length: 4 }, (_, index) => (
+          <span
+            key={index}
+            className={`session-dot${index < completedDots ? ' session-dot--complete' : ''}`}
+          />
+        ))}
+      </div>
+      <span className="daily-stats__summary">
+        {sessions.length} session{sessions.length !== 1 ? 's' : ''} / {formatTime(totalSeconds)}
       </span>
     </div>
   );

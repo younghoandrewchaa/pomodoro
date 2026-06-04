@@ -12,6 +12,10 @@ describe('BrowserWindow webPreferences', () => {
   it('disables backgroundThrottling so the timer keeps running when the popover is hidden', () => {
     expect(src).toContain('backgroundThrottling: false');
   });
+
+  it('keeps enough vertical room for the timer footer stats', () => {
+    expect(src).toContain('height: 460');
+  });
 });
 
 // Regression test: Electron Notification API silently fails in unsigned LSUIElement apps.

@@ -48,7 +48,7 @@ function showNotification(title: string, body: string) {
 function createPopoverWindow() {
   popoverWindow = new BrowserWindow({
     width: 260,
-    height: 390,
+    height: 460,
     show: false,
     frame: false,
     resizable: false,

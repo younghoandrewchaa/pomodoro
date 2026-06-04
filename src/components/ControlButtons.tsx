@@ -33,7 +33,11 @@ function PauseIcon() {
 }
 
 export default function ControlButtons({ isRunning, mode, onPlay, onPause, onReset }: Props) {
-  const playPauseClass = `play-pause-btn play-pause-btn--${isRunning ? (mode === 'focus' ? 'focus' : 'break') : 'idle'}`;
+  const playPauseClass = [
+    'play-pause-btn',
+    `play-pause-btn--${mode}`,
+    isRunning ? 'play-pause-btn--running' : 'play-pause-btn--idle',
+  ].join(' ');
 
   return (
     <div className="control-buttons">
