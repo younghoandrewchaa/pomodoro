@@ -55,9 +55,8 @@ function createPopoverWindow() {
     movable: false,
     skipTaskbar: true,
     alwaysOnTop: true,
-    transparent: true,
-    vibrancy: 'popover',
-    visualEffectState: 'active',
+    transparent: false,
+    backgroundColor: '#303030',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

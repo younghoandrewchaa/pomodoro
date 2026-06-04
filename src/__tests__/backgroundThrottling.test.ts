@@ -16,6 +16,13 @@ describe('BrowserWindow webPreferences', () => {
   it('keeps enough vertical room for the timer footer stats', () => {
     expect(src).toContain('height: 460');
   });
+
+  it('uses an opaque dark window to avoid bright rounded-corner artifacts', () => {
+    expect(src).toContain('transparent: false');
+    expect(src).toContain("backgroundColor: '#303030'");
+    expect(src).not.toContain("vibrancy: 'popover'");
+    expect(src).not.toContain('visualEffectState');
+  });
 });
 
 // Regression test: Electron Notification API silently fails in unsigned LSUIElement apps.
