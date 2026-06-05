@@ -84,13 +84,32 @@ jobs:
               --notes "$NOTES"
           fi
 
-      - name: Build, sign, notarise, and publish
+      - name: Build, sign, notarise, and make
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npx electron-forge publish
+        run: npx electron-forge make
+
+      - name: Upload release artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v$VERSION"
+          ARTIFACTS=()
+
+          while IFS= read -r -d '' artifact; do
+            ARTIFACTS+=("$artifact")
+          done < <(find out/make -type f \( -name '*.dmg' -o -name '*.zip' \) -print0)
+
+          if [ "${#ARTIFACTS[@]}" -eq 0 ]; then
+            echo "No .dmg or .zip artifacts found under out/make"
+            find out/make -type f
+            exit 1
+          fi
+
+          gh release upload "$TAG" "${ARTIFACTS[@]}" --clobber
 
       - name: Cleanup macOS keychain
         if: always()
