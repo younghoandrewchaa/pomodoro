@@ -77,17 +77,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="$(node -p "require('./package.json').version")"
+          TAG="v$VERSION"
           NOTES=$(git log -1 --format=%B)
-
-          if gh release view "$VERSION" > /dev/null 2>&1; then
-            TAG="$VERSION"
-          elif gh release view "v$VERSION" > /dev/null 2>&1; then
-            TAG="v$VERSION"
-          else
-            echo "No release found for $VERSION or v$VERSION"
-            gh release list --limit 10
-            exit 1
-          fi
 
           gh release edit "$TAG" --notes "$NOTES"
 
