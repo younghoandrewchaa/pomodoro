@@ -53,6 +53,7 @@ const config: ForgeConfig = {
       repository: { owner: 'younghoandrewchaa', name: 'pomodoro' },
       prerelease: false,
       draft: false,
+      force: true,
     }),
   ],
   plugins: [
