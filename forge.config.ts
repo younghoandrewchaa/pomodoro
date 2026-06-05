@@ -1,17 +1,41 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
+import { MakerDMG } from '@electron-forge/maker-dmg';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
+import { PublisherGithub } from '@electron-forge/publisher-github';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+
+type AppleCredentialName = 'APPLE_ID' | 'APPLE_ID_PASSWORD' | 'APPLE_TEAM_ID';
+
+const requireEnv = (name: AppleCredentialName): string => {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+};
+
+const shouldNotarize = Boolean(process.env.CI || process.env.APPLE_ID);
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     extraResource: ['./assets'],
     appBundleId: 'com.pomodoro.app',
+    osxSign: {},
+    osxNotarize: shouldNotarize
+      ? {
+          appleId: requireEnv('APPLE_ID'),
+          appleIdPassword: requireEnv('APPLE_ID_PASSWORD'),
+          teamId: requireEnv('APPLE_TEAM_ID'),
+        }
+      : undefined,
     extendInfo: {
       LSUIElement: true,
     },
@@ -20,8 +44,16 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({}),
     new MakerZIP({}, ['darwin']),
+    new MakerDMG({ format: 'ULFO' }),
     new MakerRpm({}),
     new MakerDeb({}),
+  ],
+  publishers: [
+    new PublisherGithub({
+      repository: { owner: 'younghoandrewchaa', name: 'pomodoro' },
+      prerelease: false,
+      draft: false,
+    }),
   ],
   plugins: [
     new VitePlugin({
