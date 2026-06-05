@@ -89,7 +89,21 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npx electron-forge make
+          DEBUG: 'electron-*,@electron/*,electron-forge:*'
+        run: |
+          echo "=== signing identities visible to the build ==="
+          security find-identity -v -p codesigning || true
+          echo "=== running make ==="
+          npx electron-forge make
+          echo "=== make exit code: $? ==="
+
+      - name: Inspect build output
+        if: always()
+        run: |
+          echo "=== out/ tree ==="
+          find out -maxdepth 3 -type d 2>/dev/null || echo "no out dir"
+          echo "=== out/make files ==="
+          find out/make -type f 2>/dev/null || echo "no out/make"
 
       - name: Upload release artifacts
         env:
