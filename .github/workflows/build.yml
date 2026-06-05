@@ -28,6 +28,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
+          # Pinned: Node 24.16.0 has a regression that makes electron-packager's
+          # in-process Electron-zip extraction drain the event loop and exit 0
+          # silently, so no distributables are produced. 24.13.0 works.
           node-version: 24.13.0
           cache: npm
 
@@ -84,46 +87,26 @@ jobs:
               --notes "$NOTES"
           fi
 
-      - name: Build, sign, notarise, and make
+      - name: Build, sign, notarise, and publish
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          DEBUG: 'electron-*,@electron/*,electron-forge:*'
+        run: npx electron-forge publish
+
+      - name: Verify distributables were produced
         run: |
-          echo "=== signing identities visible to the build ==="
-          security find-identity -v -p codesigning || true
-          echo "=== running make ==="
-          npx electron-forge make
-          echo "=== make exit code: $? ==="
-
-      - name: Inspect build output
-        if: always()
-        run: |
-          echo "=== out/ tree ==="
-          find out -maxdepth 3 -type d 2>/dev/null || echo "no out dir"
-          echo "=== out/make files ==="
-          find out/make -type f 2>/dev/null || echo "no out/make"
-
-      - name: Upload release artifacts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="$(node -p "require('./package.json').version")"
-          TAG="v$VERSION"
-          ARTIFACTS=()
-
-          while IFS= read -r -d '' artifact; do
-            ARTIFACTS+=("$artifact")
-          done < <(find out/make -type f \( -name '*.dmg' -o -name '*.zip' \) -print0)
-
-          if [ "${#ARTIFACTS[@]}" -eq 0 ]; then
-            echo "No .dmg or .zip artifacts found under out/make"
+          # Guards against a silently-empty build (e.g. the Node 24.16.0
+          # extraction regression) reporting success without any artifacts.
+          test -d out/make || { echo "out/make missing — packaging produced nothing"; exit 1; }
+          if ! find out/make -type f \( -name '*.dmg' -o -name '*.zip' \) | grep -q .; then
+            echo "No .dmg or .zip distributables were produced"
             find out/make -type f
             exit 1
           fi
-
-          gh release upload "$TAG" "${ARTIFACTS[@]}" --clobber
+          echo "Distributables produced:"
+          find out/make -type f \( -name '*.dmg' -o -name '*.zip' \)
 
       - name: Cleanup macOS keychain
         if: always()
