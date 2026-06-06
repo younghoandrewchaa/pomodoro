@@ -43,6 +43,19 @@ describe('App redesign shell', () => {
     expect(screen.getByLabelText('Settings')).toHaveClass('bottom-nav__tab');
   });
 
+  it('syncs remaining and total timer seconds to the tray icon', async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(electronAPI.updateTimerState).toHaveBeenCalledWith({
+        mode: 'focus',
+        isRunning: false,
+        secondsRemaining: 1500,
+        totalSeconds: 1500,
+      });
+    });
+  });
+
   it('shows daily focus stats in the bento cards with a yesterday delta', async () => {
     electronAPI.getTodaySessions.mockResolvedValue([
       { startedAt: '2026-06-06T09:00:00.000Z', durationSeconds: 6000 }, // 100 min

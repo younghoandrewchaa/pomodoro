@@ -2,7 +2,12 @@ export {};
 
 declare global {
   interface ElectronAPI {
-    updateTimerState: (state: { mode: 'focus' | 'break'; isRunning: boolean }) => void;
+    updateTimerState: (state: {
+      mode: 'focus' | 'break';
+      isRunning: boolean;
+      secondsRemaining: number;
+      totalSeconds: number;
+    }) => void;
     notifyCompletion: (mode: 'focus' | 'break') => void;
     recordSession: (session: { startedAt: string; durationSeconds: number }) => Promise<void>;
     getTodaySessions: () => Promise<Array<{ startedAt: string; durationSeconds: number }>>;

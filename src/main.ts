@@ -3,7 +3,7 @@ import { exec } from 'node:child_process';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import Store from 'electron-store';
-import { createTrayIcons } from './tray-icons';
+import { createTrayIcons, type TrayTimerState } from './tray-icons';
 
 if (started) {
   app.quit();
@@ -115,18 +115,9 @@ function togglePopover() {
 }
 
 function registerIpcHandlers() {
-  ipcMain.on('timer:state-update', (_event, state: {
-    mode: 'focus' | 'break';
-    isRunning: boolean;
-  }) => {
+  ipcMain.on('timer:state-update', (_event, state: TrayTimerState) => {
     if (!tray || !trayIcons) return;
-    if (!state.isRunning) {
-      tray.setImage(trayIcons.idle);
-    } else if (state.mode === 'focus') {
-      tray.setImage(trayIcons.focus);
-    } else {
-      tray.setImage(trayIcons.break);
-    }
+    tray.setImage(trayIcons.forState(state));
   });
 
   ipcMain.on('timer:completed', (_event, mode: 'focus' | 'break') => {
@@ -185,7 +176,7 @@ app.on('ready', () => {
   }
 
   trayIcons = createTrayIcons();
-  tray = new Tray(trayIcons.idle);
+  tray = new Tray(trayIcons.initial);
   tray.setToolTip('Pomodoro');
 
   if (process.platform === 'darwin') {

@@ -1,7 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 const api = {
-  updateTimerState: (state: { mode: 'focus' | 'break'; isRunning: boolean }) =>
+  updateTimerState: (state: {
+    mode: 'focus' | 'break';
+    isRunning: boolean;
+    secondsRemaining: number;
+    totalSeconds: number;
+  }) =>
     ipcRenderer.send('timer:state-update', state),
 
   notifyCompletion: (mode: 'focus' | 'break') =>

@@ -49,11 +49,20 @@ export default function App() {
     };
   }, [state.isRunning]);
 
+  const totalSeconds = state.mode === 'focus'
+    ? toSeconds(state.focusMinutes)
+    : toSeconds(state.breakMinutes);
+
   // Sync tray icon
   useEffect(() => {
     if (!state.initialized) return;
-    window.electronAPI.updateTimerState({ mode: state.mode, isRunning: state.isRunning });
-  }, [state.mode, state.isRunning, state.initialized]);
+    window.electronAPI.updateTimerState({
+      mode: state.mode,
+      isRunning: state.isRunning,
+      secondsRemaining: state.secondsRemaining,
+      totalSeconds,
+    });
+  }, [state.mode, state.isRunning, state.secondsRemaining, totalSeconds, state.initialized]);
 
   // Handle completion side effects
   useEffect(() => {
@@ -68,10 +77,6 @@ export default function App() {
     }
     dispatch({ type: 'CLEAR_PENDING_COMPLETION' });
   }, [state.pendingCompletion]);
-
-  const totalSeconds = state.mode === 'focus'
-    ? toSeconds(state.focusMinutes)
-    : toSeconds(state.breakMinutes);
 
   const handleSetFocusDuration = (minutes: number) => {
     dispatch({ type: 'SET_FOCUS_DURATION', minutes });
