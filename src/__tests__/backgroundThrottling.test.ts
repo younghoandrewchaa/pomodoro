@@ -13,8 +13,9 @@ describe('BrowserWindow webPreferences', () => {
     expect(src).toContain('backgroundThrottling: false');
   });
 
-  it('keeps enough vertical room for the timer stage, stats and bottom nav', () => {
-    expect(src).toContain('height: 844');
+  it('uses the requested compact popover dimensions', () => {
+    expect(src).toContain('width: 280');
+    expect(src).toContain('height: 500');
   });
 
   it('uses an opaque surface-toned window to avoid bright rounded-corner artifacts', () => {
