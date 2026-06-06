@@ -95,9 +95,9 @@ export function createTomatoPngBuffer(fillColor: string, size: number): Buffer {
   const highlight = { red: 255, green: 255, blue: 255, alpha: 80 };
   const tomato = { ...fill, alpha: 255 };
   const centerX = (size - 1) / 2;
-  const centerY = size * 0.62;
-  const radiusX = size * 0.37;
-  const radiusY = size * 0.34;
+  const centerY = size * 0.57;
+  const radiusX = size * 0.44;
+  const radiusY = size * 0.46;
 
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
@@ -110,12 +110,12 @@ export function createTomatoPngBuffer(fillColor: string, size: number): Buffer {
     }
   }
 
-  const stemY = Math.round(size * 0.24);
-  for (let x = Math.round(size * 0.28); x <= Math.round(size * 0.72); x += 1) {
+  const stemY = Math.round(size * 0.16);
+  for (let x = Math.round(size * 0.18); x <= Math.round(size * 0.82); x += 1) {
     drawPixel(pixels, size, x, stemY, leaf);
     drawPixel(pixels, size, x, stemY + 1, leaf);
   }
-  for (let offset = 0; offset <= Math.round(size * 0.2); offset += 1) {
+  for (let offset = 0; offset <= Math.round(size * 0.24); offset += 1) {
     drawPixel(pixels, size, Math.round(centerX) - offset, stemY + offset, leaf);
     drawPixel(pixels, size, Math.round(centerX) + offset, stemY + offset, leaf);
     drawPixel(pixels, size, Math.round(centerX), stemY + offset, leaf);
