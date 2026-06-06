@@ -5,20 +5,13 @@ type Props = {
   breakMinutes: number;
   onSetFocus: (minutes: number) => void;
   onSetBreak: (minutes: number) => void;
-  onClose: () => void;
+  onQuit: () => void;
 };
 
-export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, onSetBreak, onClose }: Props) {
+export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, onSetBreak, onQuit }: Props) {
   return (
     <div className="settings-panel">
-      <div className="settings-header">
-        <button className="settings-back" onClick={onClose} aria-label="Back">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <span className="settings-title">Settings</span>
-      </div>
+      <h2 className="settings-title">Settings</h2>
 
       <div className="settings-body">
         <div className="settings-row">
@@ -51,6 +44,12 @@ export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, 
           Changing a duration resets that timer.
         </p>
       </div>
+
+      <div className="settings-spacer" />
+
+      <button className="quit-btn" onClick={onQuit}>
+        Quit Pomodoro
+      </button>
     </div>
   );
 }

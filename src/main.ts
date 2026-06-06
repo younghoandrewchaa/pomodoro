@@ -47,8 +47,8 @@ function showNotification(title: string, body: string) {
 
 function createPopoverWindow() {
   popoverWindow = new BrowserWindow({
-    width: 260,
-    height: 460,
+    width: 390,
+    height: 844,
     show: false,
     frame: false,
     resizable: false,
@@ -56,7 +56,7 @@ function createPopoverWindow() {
     skipTaskbar: true,
     alwaysOnTop: true,
     transparent: false,
-    backgroundColor: '#303030',
+    backgroundColor: '#f9f9f7',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -152,6 +152,12 @@ function registerIpcHandlers() {
     const today = new Date().toISOString().slice(0, 10);
     const sessions = sessionStore.get('sessions');
     return sessions.filter(s => s.startedAt.startsWith(today));
+  });
+
+  ipcMain.handle('session:get-yesterday', () => {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const sessions = sessionStore.get('sessions');
+    return sessions.filter(s => s.startedAt.startsWith(yesterday));
   });
 
   ipcMain.handle('settings:get', () => {

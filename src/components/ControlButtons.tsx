@@ -4,54 +4,33 @@ type Props = {
   onPlay: () => void;
   onPause: () => void;
   onReset: () => void;
+  onSkip: () => void;
 };
 
-function ResetIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-    </svg>
-  );
-}
-
-function PlayIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-      <polygon points="5,3 19,12 5,21" />
-    </svg>
-  );
-}
-
-function PauseIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-      <rect x="6" y="4" width="4" height="16" />
-      <rect x="14" y="4" width="4" height="16" />
-    </svg>
-  );
-}
-
-export default function ControlButtons({ isRunning, mode, onPlay, onPause, onReset }: Props) {
-  const playPauseClass = [
-    'play-pause-btn',
-    `play-pause-btn--${mode}`,
-    isRunning ? 'play-pause-btn--running' : 'play-pause-btn--idle',
-  ].join(' ');
+export default function ControlButtons({ isRunning, mode, onPlay, onPause, onReset, onSkip }: Props) {
+  const playPauseClass = `play-pause-btn play-pause-btn--${mode}`;
 
   return (
     <div className="control-buttons">
-      <button className="reset-btn" onClick={onReset} aria-label="Reset">
-        <ResetIcon />
+      <button className="control-btn control-btn--secondary" onClick={onReset} aria-label="Reset">
+        <span className="material-symbols-outlined" aria-hidden="true">replay</span>
       </button>
       <button
-        className={playPauseClass}
+        className={`control-btn ${playPauseClass}`}
         onClick={isRunning ? onPause : onPlay}
         aria-label={isRunning ? 'Pause' : 'Play'}
       >
-        {isRunning ? <PauseIcon /> : <PlayIcon />}
+        <span className="material-symbols-outlined" aria-hidden="true">
+          {isRunning ? 'pause' : 'play_arrow'}
+        </span>
       </button>
-      <div className="control-spacer" />
+      <button
+        className="control-btn control-btn--secondary"
+        onClick={onSkip}
+        aria-label={mode === 'focus' ? 'Skip to break' : 'Skip to focus'}
+      >
+        <span className="material-symbols-outlined" aria-hidden="true">skip_next</span>
+      </button>
     </div>
   );
 }

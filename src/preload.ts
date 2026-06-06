@@ -13,6 +13,9 @@ const api = {
   getTodaySessions: (): Promise<Array<{ startedAt: string; durationSeconds: number }>> =>
     ipcRenderer.invoke('session:get-today'),
 
+  getYesterdaySessions: (): Promise<Array<{ startedAt: string; durationSeconds: number }>> =>
+    ipcRenderer.invoke('session:get-yesterday'),
+
   getSettings: (): Promise<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string }> =>
     ipcRenderer.invoke('settings:get'),
 

@@ -18,6 +18,7 @@ export interface State {
   breakMinutes: number;
   showSettings: boolean;
   todaySessions: SessionRecord[];
+  yesterdaySessions: SessionRecord[];
   sessionStartedAt: string | null;
   initialized: boolean;
   pendingCompletion: PendingCompletion | null;
@@ -36,7 +37,7 @@ export type Action =
   | { type: 'TOGGLE_SETTINGS' }
   | { type: 'CLOSE_SETTINGS' }
   | { type: 'SESSIONS_UPDATED'; sessions: SessionRecord[] }
-  | { type: 'INIT'; focusMinutes: number; breakMinutes: number; sessions: SessionRecord[]; lastOpenedDate: string };
+  | { type: 'INIT'; focusMinutes: number; breakMinutes: number; sessions: SessionRecord[]; yesterdaySessions: SessionRecord[]; lastOpenedDate: string };
 
 export function toSeconds(minutes: number) {
   return minutes * 60;
@@ -61,6 +62,7 @@ export const initialState: State = {
   breakMinutes: DEFAULT_BREAK,
   showSettings: false,
   todaySessions: [],
+  yesterdaySessions: [],
   sessionStartedAt: null,
   initialized: false,
   pendingCompletion: null,
@@ -170,6 +172,7 @@ export function reducer(state: State, action: Action): State {
         mode,
         secondsRemaining: toSeconds(mode === 'focus' ? action.focusMinutes : action.breakMinutes),
         todaySessions: action.sessions,
+        yesterdaySessions: action.yesterdaySessions,
         initialized: true,
       };
     }

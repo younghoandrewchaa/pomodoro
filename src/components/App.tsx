@@ -3,20 +3,9 @@ import ModeLabel from './ModeLabel';
 import TimerDisplay from './TimerDisplay';
 import ProgressBar from './ProgressBar';
 import ControlButtons from './ControlButtons';
-import SkipLink from './SkipLink';
 import DailyStats from './DailyStats';
 import SettingsPanel from './SettingsPanel';
 import { reducer, initialState, toSeconds } from './timerReducer';
-
-function MoreIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <circle cx="12" cy="5" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="12" cy="19" r="2" />
-    </svg>
-  );
-}
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -25,9 +14,10 @@ export default function App() {
   // Load settings and sessions on mount
   useEffect(() => {
     (async () => {
-      const [settings, sessions] = await Promise.all([
+      const [settings, sessions, yesterdaySessions] = await Promise.all([
         window.electronAPI.getSettings(),
         window.electronAPI.getTodaySessions(),
+        window.electronAPI.getYesterdaySessions(),
       ]);
       dispatch({
         type: 'INIT',
@@ -35,6 +25,7 @@ export default function App() {
         breakMinutes: settings.breakMinutes,
         lastOpenedDate: settings.lastOpenedDate,
         sessions,
+        yesterdaySessions,
       });
       await window.electronAPI.setSettings({ lastOpenedDate: new Date().toISOString().slice(0, 10) });
     })();
@@ -92,68 +83,83 @@ export default function App() {
     window.electronAPI.setSettings({ breakMinutes: minutes });
   };
 
+  const handleSkip = () => {
+    dispatch({ type: state.mode === 'focus' ? 'SKIP_TO_BREAK' : 'SKIP_TO_FOCUS' });
+  };
+
   if (!state.initialized) {
     return <div className="app loading" />;
-  }
-
-  if (state.showSettings) {
-    return (
-      <div className="app app--settings">
-        <SettingsPanel
-          focusMinutes={state.focusMinutes}
-          breakMinutes={state.breakMinutes}
-          onSetFocus={handleSetFocusDuration}
-          onSetBreak={handleSetBreakDuration}
-          onClose={() => dispatch({ type: 'CLOSE_SETTINGS' })}
-        />
-      </div>
-    );
   }
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1 className="app-title">Pomodoro</h1>
-        <button
-          className="app-menu-btn"
-          onClick={() => dispatch({ type: 'TOGGLE_SETTINGS' })}
-          aria-label="Settings"
-        >
-          <MoreIcon />
+        <div className="app-brand">
+          <span className="material-symbols-outlined" aria-hidden="true">timer</span>
+          <h1 className="app-title">Pomodoro</h1>
+        </div>
+        <button className="app-icon-btn" aria-label="Notifications">
+          <span className="material-symbols-outlined" aria-hidden="true">notifications</span>
         </button>
       </header>
 
-      <main className="timer-stage">
-        <ModeLabel mode={state.mode} />
-        <div className="timer-ring-shell">
-          <ProgressBar
-            secondsRemaining={state.secondsRemaining}
-            totalSeconds={totalSeconds}
-            mode={state.mode}
-          />
-          <TimerDisplay secondsRemaining={state.secondsRemaining} />
-        </div>
-        <ControlButtons
-          isRunning={state.isRunning}
-          mode={state.mode}
-          onPlay={() => dispatch({ type: 'PLAY' })}
-          onPause={() => dispatch({ type: 'PAUSE' })}
-          onReset={() => dispatch({ type: 'RESET' })}
+      {state.showSettings ? (
+        <SettingsPanel
+          focusMinutes={state.focusMinutes}
+          breakMinutes={state.breakMinutes}
+          onSetFocus={handleSetFocusDuration}
+          onSetBreak={handleSetBreakDuration}
+          onQuit={() => window.electronAPI.quit()}
         />
-      </main>
+      ) : (
+        <>
+          <main className="timer-stage">
+            <div className="timer-ring-shell">
+              <ProgressBar
+                secondsRemaining={state.secondsRemaining}
+                totalSeconds={totalSeconds}
+                mode={state.mode}
+              />
+              <div className="timer-center">
+                <TimerDisplay secondsRemaining={state.secondsRemaining} />
+                <ModeLabel mode={state.mode} />
+              </div>
+            </div>
+            <ControlButtons
+              isRunning={state.isRunning}
+              mode={state.mode}
+              onPlay={() => dispatch({ type: 'PLAY' })}
+              onPause={() => dispatch({ type: 'PAUSE' })}
+              onReset={() => dispatch({ type: 'RESET' })}
+              onSkip={handleSkip}
+            />
+          </main>
 
-      <footer className="app-footer">
-        <SkipLink
-          mode={state.mode}
-          isRunning={state.isRunning}
-          onSkipToBreak={() => dispatch({ type: 'SKIP_TO_BREAK' })}
-          onSkipToFocus={() => dispatch({ type: 'SKIP_TO_FOCUS' })}
-        />
-        <DailyStats sessions={state.todaySessions} />
-        <button className="quit-btn" onClick={() => window.electronAPI.quit()}>
-          Quit
+          <DailyStats
+            sessions={state.todaySessions}
+            yesterdaySessions={state.yesterdaySessions}
+          />
+        </>
+      )}
+
+      <nav className="bottom-nav">
+        <button
+          className={`bottom-nav__tab${!state.showSettings ? ' bottom-nav__tab--active' : ''}`}
+          onClick={() => dispatch({ type: 'CLOSE_SETTINGS' })}
+          aria-label="Timer"
+        >
+          <span className="material-symbols-outlined" aria-hidden="true">timer</span>
+          <span>Timer</span>
         </button>
-      </footer>
+        <button
+          className={`bottom-nav__tab${state.showSettings ? ' bottom-nav__tab--active' : ''}`}
+          onClick={() => { if (!state.showSettings) dispatch({ type: 'TOGGLE_SETTINGS' }); }}
+          aria-label="Settings"
+        >
+          <span className="material-symbols-outlined" aria-hidden="true">settings</span>
+          <span>Settings</span>
+        </button>
+      </nav>
     </div>
   );
 }
