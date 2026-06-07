@@ -44,7 +44,7 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({}),
     new MakerZIP({}, ['darwin']),
-    new MakerDMG({ format: 'ULFO' }),
+    new MakerDMG({ format: 'ULFO', title: 'Pomodoro Installer' }),
     new MakerRpm({}),
     new MakerDeb({}),
   ],

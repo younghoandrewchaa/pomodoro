@@ -87,6 +87,18 @@ jobs:
               --notes "$NOTES"
           fi
 
+      - name: Preflight DMG mounts
+        run: |
+          echo "Mounted disk images before build:"
+          hdiutil info || true
+
+          for volume in "/Volumes/pomodoro" "/Volumes/Pomodoro Installer"; do
+            if [ -d "$volume" ]; then
+              echo "Detaching stale DMG mount: $volume"
+              hdiutil detach "$volume" || hdiutil detach -force "$volume" || true
+            fi
+          done
+
       - name: Build, sign, notarise, and publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
