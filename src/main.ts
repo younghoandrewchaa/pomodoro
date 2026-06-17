@@ -47,8 +47,8 @@ function showNotification(title: string, body: string) {
 
 function createPopoverWindow() {
   popoverWindow = new BrowserWindow({
-    width: 280,
-    height: 500,
+    width: 700,
+    height: 600,
     show: false,
     frame: false,
     resizable: false,
@@ -56,7 +56,7 @@ function createPopoverWindow() {
     skipTaskbar: true,
     alwaysOnTop: true,
     transparent: false,
-    backgroundColor: '#f9f9f7',
+    backgroundColor: '#f9f9f9',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

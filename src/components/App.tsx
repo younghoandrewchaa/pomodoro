@@ -1,10 +1,11 @@
 import { useReducer, useEffect, useRef } from 'react';
-import ModeLabel from './ModeLabel';
 import TimerDisplay from './TimerDisplay';
 import ProgressBar from './ProgressBar';
 import ControlButtons from './ControlButtons';
 import DailyStats from './DailyStats';
 import SettingsPanel from './SettingsPanel';
+import ModeLabel from './ModeLabel';
+import TaskSection from './TaskSection';
 import { reducer, initialState, toSeconds } from './timerReducer';
 
 export default function App() {
@@ -98,73 +99,71 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <div className="app-brand">
-          <span className="material-symbols-outlined" aria-hidden="true">timer</span>
-          <h1 className="app-title">Pomodoro</h1>
+      <nav className="sidebar">
+        <div className="sidebar-brand">
+          <div className="sidebar-brand-title">Pomodoro</div>
+          <div className="sidebar-brand-sub">Stay productive</div>
         </div>
-        <button className="app-icon-btn" aria-label="Notifications">
-          <span className="material-symbols-outlined" aria-hidden="true">notifications</span>
-        </button>
-      </header>
-
-      {state.showSettings ? (
-        <SettingsPanel
-          focusMinutes={state.focusMinutes}
-          breakMinutes={state.breakMinutes}
-          onSetFocus={handleSetFocusDuration}
-          onSetBreak={handleSetBreakDuration}
-          onQuit={() => window.electronAPI.quit()}
-        />
-      ) : (
-        <>
-          <main className="timer-stage">
-            <div className="timer-ring-shell">
-              <ProgressBar
-                secondsRemaining={state.secondsRemaining}
-                totalSeconds={totalSeconds}
-                mode={state.mode}
-              />
-              <div className="timer-center">
-                <TimerDisplay secondsRemaining={state.secondsRemaining} />
-                <ModeLabel mode={state.mode} />
-              </div>
-            </div>
-            <ControlButtons
-              isRunning={state.isRunning}
-              mode={state.mode}
-              onPlay={() => dispatch({ type: 'PLAY' })}
-              onPause={() => dispatch({ type: 'PAUSE' })}
-              onReset={() => dispatch({ type: 'RESET' })}
-              onSkip={handleSkip}
-            />
-          </main>
-
-          <DailyStats
-            sessions={state.todaySessions}
-            yesterdaySessions={state.yesterdaySessions}
-          />
-        </>
-      )}
-
-      <nav className="bottom-nav">
-        <button
-          className={`bottom-nav__tab${!state.showSettings ? ' bottom-nav__tab--active' : ''}`}
-          onClick={() => dispatch({ type: 'CLOSE_SETTINGS' })}
-          aria-label="Timer"
-        >
-          <span className="material-symbols-outlined" aria-hidden="true">timer</span>
-          <span>Timer</span>
-        </button>
-        <button
-          className={`bottom-nav__tab${state.showSettings ? ' bottom-nav__tab--active' : ''}`}
-          onClick={() => { if (!state.showSettings) dispatch({ type: 'TOGGLE_SETTINGS' }); }}
-          aria-label="Settings"
-        >
-          <span className="material-symbols-outlined" aria-hidden="true">settings</span>
-          <span>Settings</span>
-        </button>
+        <div className="sidebar-nav">
+          <button
+            className={`sidebar-nav__item${!state.showSettings ? ' sidebar-nav__item--active' : ''}`}
+            onClick={() => dispatch({ type: 'CLOSE_SETTINGS' })}
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">timer</span>
+            Timer
+          </button>
+          <button
+            className={`sidebar-nav__item${state.showSettings ? ' sidebar-nav__item--active' : ''}`}
+            onClick={() => { if (!state.showSettings) dispatch({ type: 'TOGGLE_SETTINGS' }); }}
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">settings</span>
+            Settings
+          </button>
+        </div>
       </nav>
+
+      <div className="main-content">
+        {state.showSettings ? (
+          <SettingsPanel
+            focusMinutes={state.focusMinutes}
+            breakMinutes={state.breakMinutes}
+            onSetFocus={handleSetFocusDuration}
+            onSetBreak={handleSetBreakDuration}
+            onQuit={() => window.electronAPI.quit()}
+          />
+        ) : (
+          <>
+            <main className="timer-stage">
+              <div className="timer-ring-shell">
+                <ProgressBar
+                  secondsRemaining={state.secondsRemaining}
+                  totalSeconds={totalSeconds}
+                  mode={state.mode}
+                />
+                <div className="timer-center">
+                  <TimerDisplay secondsRemaining={state.secondsRemaining} />
+                  <ModeLabel mode={state.mode} />
+                </div>
+              </div>
+              <ControlButtons
+                isRunning={state.isRunning}
+                mode={state.mode}
+                onPlay={() => dispatch({ type: 'PLAY' })}
+                onPause={() => dispatch({ type: 'PAUSE' })}
+                onReset={() => dispatch({ type: 'RESET' })}
+                onSkip={handleSkip}
+              />
+            </main>
+
+            <DailyStats
+              sessions={state.todaySessions}
+              yesterdaySessions={state.yesterdaySessions}
+            />
+
+            <TaskSection />
+          </>
+        )}
+      </div>
     </div>
   );
 }
