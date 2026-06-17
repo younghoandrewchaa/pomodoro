@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { Task } from './types';
 
 const api = {
   updateTimerState: (state: {
@@ -26,6 +27,21 @@ const api = {
 
   setSettings: (updates: Partial<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string }>) =>
     ipcRenderer.invoke('settings:set', updates),
+
+  getAllTasks: (): Promise<Task[]> =>
+    ipcRenderer.invoke('task:get-all'),
+
+  createTask: (name: string): Promise<Task> =>
+    ipcRenderer.invoke('task:create', { name }),
+
+  updateTask: (id: string, changes: Partial<Task>): Promise<Task | null> =>
+    ipcRenderer.invoke('task:update', { id, changes }),
+
+  deleteTask: (id: string): Promise<void> =>
+    ipcRenderer.invoke('task:delete', { id }),
+
+  recordTaskSession: (id: string, durationSeconds: number): Promise<void> =>
+    ipcRenderer.invoke('task:record-session', { id, durationSeconds }),
 
   quit: () => ipcRenderer.send('app:quit'),
 };

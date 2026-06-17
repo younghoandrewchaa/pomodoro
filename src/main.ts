@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Tray, ipcMain, screen } from 'electron';
 import { exec } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import Store from 'electron-store';
@@ -32,6 +33,21 @@ const settingsStore = new Store<Settings>({
 const sessionStore = new Store<{ sessions: SessionRecord[] }>({
   name: 'sessions',
   defaults: { sessions: [] },
+});
+
+interface Task {
+  id: string;
+  name: string;
+  createdAt: string;
+  status: 'active' | 'completed';
+  completedAt?: string;
+  totalSeconds: number;
+  totalPomodoros: number;
+}
+
+const taskStore = new Store<{ tasks: Task[] }>({
+  name: 'tasks',
+  defaults: { tasks: [] },
 });
 
 let tray: Tray | null = null;
@@ -163,6 +179,43 @@ function registerIpcHandlers() {
     if (updates.focusMinutes !== undefined) settingsStore.set('focusMinutes', updates.focusMinutes);
     if (updates.breakMinutes !== undefined) settingsStore.set('breakMinutes', updates.breakMinutes);
     if (updates.lastOpenedDate !== undefined) settingsStore.set('lastOpenedDate', updates.lastOpenedDate);
+  });
+
+  ipcMain.handle('task:get-all', () => taskStore.get('tasks'));
+
+  ipcMain.handle('task:create', (_event, { name }: { name: string }): Task => {
+    const task: Task = {
+      id: randomUUID(),
+      name,
+      createdAt: new Date().toISOString(),
+      status: 'active',
+      totalSeconds: 0,
+      totalPomodoros: 0,
+    };
+    taskStore.set('tasks', [...taskStore.get('tasks'), task]);
+    return task;
+  });
+
+  ipcMain.handle('task:update', (_event, { id, changes }: { id: string; changes: Partial<Task> }): Task | null => {
+    const tasks = taskStore.get('tasks');
+    const idx = tasks.findIndex(t => t.id === id);
+    if (idx === -1) return null;
+    tasks[idx] = { ...tasks[idx], ...changes };
+    taskStore.set('tasks', tasks);
+    return tasks[idx];
+  });
+
+  ipcMain.handle('task:delete', (_event, { id }: { id: string }) => {
+    taskStore.set('tasks', taskStore.get('tasks').filter(t => t.id !== id));
+  });
+
+  ipcMain.handle('task:record-session', (_event, { id, durationSeconds }: { id: string; durationSeconds: number }) => {
+    const tasks = taskStore.get('tasks');
+    const idx = tasks.findIndex(t => t.id === id);
+    if (idx === -1) return;
+    tasks[idx].totalSeconds += durationSeconds;
+    tasks[idx].totalPomodoros += 1;
+    taskStore.set('tasks', tasks);
   });
 
   ipcMain.on('app:quit', () => {

@@ -14,14 +14,20 @@ const electronAPI = {
     lastOpenedDate: new Date().toISOString().slice(0, 10),
   }),
   setSettings: vi.fn().mockResolvedValue(undefined),
+  getAllTasks: vi.fn().mockResolvedValue([]),
+  createTask: vi.fn().mockResolvedValue({ id: 'task-1', name: 'Test task', createdAt: new Date().toISOString(), status: 'active', totalSeconds: 0, totalPomodoros: 0 }),
+  updateTask: vi.fn().mockResolvedValue(null),
+  deleteTask: vi.fn().mockResolvedValue(undefined),
+  recordTaskSession: vi.fn().mockResolvedValue(undefined),
   quit: vi.fn(),
 };
 
-describe('App redesign shell', () => {
+describe('App shell', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     electronAPI.getTodaySessions.mockResolvedValue([]);
     electronAPI.getYesterdaySessions.mockResolvedValue([]);
+    electronAPI.getAllTasks.mockResolvedValue([]);
     window.electronAPI = electronAPI;
   });
 
@@ -29,18 +35,17 @@ describe('App redesign shell', () => {
     vi.useRealTimers();
   });
 
-  it('renders the Precision Focus shell around the timer', async () => {
+  it('renders the sidebar layout with timer and brand', async () => {
     const { container } = render(<App />);
 
     await waitFor(() => {
       expect(screen.getByText('Pomodoro')).toBeInTheDocument();
     });
 
-    expect(container.querySelector('.app-header')).toBeInTheDocument();
+    expect(container.querySelector('.sidebar')).toBeInTheDocument();
     expect(container.querySelector('.timer-ring-shell')).toBeInTheDocument();
     expect(container.querySelector('.progress-ring')).toBeInTheDocument();
-    expect(container.querySelector('.bottom-nav')).toBeInTheDocument();
-    expect(screen.getByLabelText('Settings')).toHaveClass('bottom-nav__tab');
+    expect(container.querySelector('.sidebar-nav')).toBeInTheDocument();
   });
 
   it('syncs remaining and total timer seconds to the tray icon', async () => {
@@ -74,14 +79,14 @@ describe('App redesign shell', () => {
     expect(screen.getByText('+15% vs yesterday')).toBeInTheDocument();
   });
 
-  it('switches to the settings view via the bottom nav', async () => {
+  it('switches to the settings view via the sidebar nav', async () => {
     const { container } = render(<App />);
 
     await waitFor(() => {
       expect(screen.getByText('Pomodoro')).toBeInTheDocument();
     });
 
-    screen.getByLabelText('Settings').click();
+    screen.getByText('Settings').click();
 
     await waitFor(() => {
       expect(screen.getByText('Focus Duration')).toBeInTheDocument();

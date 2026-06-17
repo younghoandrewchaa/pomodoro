@@ -1,4 +1,8 @@
+import type { Task } from '../types';
+
+export type { Task };
 export type Mode = 'focus' | 'break';
+export type View = 'timer' | 'settings' | 'tasks';
 
 export interface SessionRecord {
   startedAt: string;
@@ -12,16 +16,18 @@ export interface PendingCompletion {
 
 export interface State {
   mode: Mode;
+  view: View;
   secondsRemaining: number;
   isRunning: boolean;
   focusMinutes: number;
   breakMinutes: number;
-  showSettings: boolean;
   todaySessions: SessionRecord[];
   yesterdaySessions: SessionRecord[];
   sessionStartedAt: string | null;
   initialized: boolean;
   pendingCompletion: PendingCompletion | null;
+  tasks: Task[];
+  activeTaskId: string | null;
 }
 
 export type Action =
@@ -34,10 +40,11 @@ export type Action =
   | { type: 'CLEAR_PENDING_COMPLETION' }
   | { type: 'SET_FOCUS_DURATION'; minutes: number }
   | { type: 'SET_BREAK_DURATION'; minutes: number }
-  | { type: 'TOGGLE_SETTINGS' }
-  | { type: 'CLOSE_SETTINGS' }
+  | { type: 'SET_VIEW'; view: View }
+  | { type: 'SET_ACTIVE_TASK'; taskId: string | null }
   | { type: 'SESSIONS_UPDATED'; sessions: SessionRecord[] }
-  | { type: 'INIT'; focusMinutes: number; breakMinutes: number; sessions: SessionRecord[]; yesterdaySessions: SessionRecord[]; lastOpenedDate: string };
+  | { type: 'TASKS_UPDATED'; tasks: Task[] }
+  | { type: 'INIT'; focusMinutes: number; breakMinutes: number; sessions: SessionRecord[]; yesterdaySessions: SessionRecord[]; lastOpenedDate: string; tasks: Task[] };
 
 export function toSeconds(minutes: number) {
   return minutes * 60;
@@ -56,16 +63,18 @@ export const DEFAULT_BREAK = 5;
 
 export const initialState: State = {
   mode: 'focus',
+  view: 'timer',
   secondsRemaining: toSeconds(DEFAULT_FOCUS),
   isRunning: false,
   focusMinutes: DEFAULT_FOCUS,
   breakMinutes: DEFAULT_BREAK,
-  showSettings: false,
   todaySessions: [],
   yesterdaySessions: [],
   sessionStartedAt: null,
   initialized: false,
   pendingCompletion: null,
+  tasks: [],
+  activeTaskId: null,
 };
 
 export function reducer(state: State, action: Action): State {
@@ -152,14 +161,17 @@ export function reducer(state: State, action: Action): State {
         } : {}),
       };
 
-    case 'TOGGLE_SETTINGS':
-      return { ...state, showSettings: !state.showSettings };
+    case 'SET_VIEW':
+      return { ...state, view: action.view };
 
-    case 'CLOSE_SETTINGS':
-      return { ...state, showSettings: false };
+    case 'SET_ACTIVE_TASK':
+      return { ...state, activeTaskId: action.taskId };
 
     case 'SESSIONS_UPDATED':
       return { ...state, todaySessions: action.sessions };
+
+    case 'TASKS_UPDATED':
+      return { ...state, tasks: action.tasks };
 
     case 'INIT': {
       const today = new Date().toISOString().slice(0, 10);
@@ -173,6 +185,7 @@ export function reducer(state: State, action: Action): State {
         secondsRemaining: toSeconds(mode === 'focus' ? action.focusMinutes : action.breakMinutes),
         todaySessions: action.sessions,
         yesterdaySessions: action.yesterdaySessions,
+        tasks: action.tasks,
         initialized: true,
       };
     }

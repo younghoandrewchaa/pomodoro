@@ -13,14 +13,14 @@ describe('BrowserWindow webPreferences', () => {
     expect(src).toContain('backgroundThrottling: false');
   });
 
-  it('uses the requested compact popover dimensions', () => {
-    expect(src).toContain('width: 280');
-    expect(src).toContain('height: 500');
+  it('uses the expanded popover dimensions to accommodate task management', () => {
+    expect(src).toContain('width: 700');
+    expect(src).toContain('height: 600');
   });
 
   it('uses an opaque surface-toned window to avoid bright rounded-corner artifacts', () => {
     expect(src).toContain('transparent: false');
-    expect(src).toContain("backgroundColor: '#f9f9f7'");
+    expect(src).toContain("backgroundColor: '#f9f9f9'");
     expect(src).not.toContain("vibrancy: 'popover'");
     expect(src).not.toContain('visualEffectState');
   });

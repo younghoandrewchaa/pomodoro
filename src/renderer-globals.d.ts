@@ -1,3 +1,5 @@
+import type { Task } from './types';
+
 export {};
 
 declare global {
@@ -14,6 +16,11 @@ declare global {
     getYesterdaySessions: () => Promise<Array<{ startedAt: string; durationSeconds: number }>>;
     getSettings: () => Promise<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string }>;
     setSettings: (updates: Partial<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string }>) => Promise<void>;
+    getAllTasks: () => Promise<Task[]>;
+    createTask: (name: string) => Promise<Task>;
+    updateTask: (id: string, changes: Partial<Task>) => Promise<Task | null>;
+    deleteTask: (id: string) => Promise<void>;
+    recordTaskSession: (id: string, durationSeconds: number) => Promise<void>;
     quit: () => void;
   }
 

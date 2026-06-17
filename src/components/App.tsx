@@ -6,19 +6,21 @@ import DailyStats from './DailyStats';
 import SettingsPanel from './SettingsPanel';
 import ModeLabel from './ModeLabel';
 import TaskSection from './TaskSection';
+import TaskManagerPanel from './TaskManagerPanel';
 import { reducer, initialState, toSeconds } from './timerReducer';
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load settings and sessions on mount
+  // Load settings, sessions, and tasks on mount
   useEffect(() => {
     (async () => {
-      const [settings, sessions, yesterdaySessions] = await Promise.all([
+      const [settings, sessions, yesterdaySessions, tasks] = await Promise.all([
         window.electronAPI.getSettings(),
         window.electronAPI.getTodaySessions(),
         window.electronAPI.getYesterdaySessions(),
+        window.electronAPI.getAllTasks(),
       ]);
       dispatch({
         type: 'INIT',
@@ -27,6 +29,7 @@ export default function App() {
         lastOpenedDate: settings.lastOpenedDate,
         sessions,
         yesterdaySessions,
+        tasks,
       });
       await window.electronAPI.setSettings({ lastOpenedDate: new Date().toISOString().slice(0, 10) });
     })();
@@ -69,12 +72,21 @@ export default function App() {
   useEffect(() => {
     if (!state.pendingCompletion) return;
     const { mode, record } = state.pendingCompletion;
+    const activeTaskId = state.activeTaskId;
     window.electronAPI.notifyCompletion(mode);
     if (record) {
-      window.electronAPI.recordSession(record).then(async () => {
-        const sessions = await window.electronAPI.getTodaySessions();
+      (async () => {
+        await window.electronAPI.recordSession(record);
+        if (activeTaskId) {
+          await window.electronAPI.recordTaskSession(activeTaskId, record.durationSeconds);
+        }
+        const [sessions, tasks] = await Promise.all([
+          window.electronAPI.getTodaySessions(),
+          window.electronAPI.getAllTasks(),
+        ]);
         dispatch({ type: 'SESSIONS_UPDATED', sessions });
-      });
+        dispatch({ type: 'TASKS_UPDATED', tasks });
+      })();
     }
     dispatch({ type: 'CLEAR_PENDING_COMPLETION' });
   }, [state.pendingCompletion]);
@@ -93,6 +105,27 @@ export default function App() {
     dispatch({ type: state.mode === 'focus' ? 'SKIP_TO_BREAK' : 'SKIP_TO_FOCUS' });
   };
 
+  const handleCreateTask = async (name: string) => {
+    const task = await window.electronAPI.createTask(name);
+    const tasks = await window.electronAPI.getAllTasks();
+    dispatch({ type: 'TASKS_UPDATED', tasks });
+    dispatch({ type: 'SET_ACTIVE_TASK', taskId: task.id });
+  };
+
+  const handleCompleteTask = async (id: string) => {
+    await window.electronAPI.updateTask(id, { status: 'completed', completedAt: new Date().toISOString() });
+    const tasks = await window.electronAPI.getAllTasks();
+    dispatch({ type: 'TASKS_UPDATED', tasks });
+    if (state.activeTaskId === id) dispatch({ type: 'SET_ACTIVE_TASK', taskId: null });
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    await window.electronAPI.deleteTask(id);
+    const tasks = await window.electronAPI.getAllTasks();
+    dispatch({ type: 'TASKS_UPDATED', tasks });
+    if (state.activeTaskId === id) dispatch({ type: 'SET_ACTIVE_TASK', taskId: null });
+  };
+
   if (!state.initialized) {
     return <div className="app loading" />;
   }
@@ -106,15 +139,15 @@ export default function App() {
         </div>
         <div className="sidebar-nav">
           <button
-            className={`sidebar-nav__item${!state.showSettings ? ' sidebar-nav__item--active' : ''}`}
-            onClick={() => dispatch({ type: 'CLOSE_SETTINGS' })}
+            className={`sidebar-nav__item${state.view === 'timer' ? ' sidebar-nav__item--active' : ''}`}
+            onClick={() => dispatch({ type: 'SET_VIEW', view: 'timer' })}
           >
             <span className="material-symbols-outlined" aria-hidden="true">timer</span>
             Timer
           </button>
           <button
-            className={`sidebar-nav__item${state.showSettings ? ' sidebar-nav__item--active' : ''}`}
-            onClick={() => { if (!state.showSettings) dispatch({ type: 'TOGGLE_SETTINGS' }); }}
+            className={`sidebar-nav__item${state.view === 'settings' ? ' sidebar-nav__item--active' : ''}`}
+            onClick={() => dispatch({ type: 'SET_VIEW', view: 'settings' })}
           >
             <span className="material-symbols-outlined" aria-hidden="true">settings</span>
             Settings
@@ -123,13 +156,22 @@ export default function App() {
       </nav>
 
       <div className="main-content">
-        {state.showSettings ? (
+        {state.view === 'settings' ? (
           <SettingsPanel
             focusMinutes={state.focusMinutes}
             breakMinutes={state.breakMinutes}
             onSetFocus={handleSetFocusDuration}
             onSetBreak={handleSetBreakDuration}
             onQuit={() => window.electronAPI.quit()}
+          />
+        ) : state.view === 'tasks' ? (
+          <TaskManagerPanel
+            tasks={state.tasks}
+            activeTaskId={state.activeTaskId}
+            onBack={() => dispatch({ type: 'SET_VIEW', view: 'timer' })}
+            onSelect={(id) => dispatch({ type: 'SET_ACTIVE_TASK', taskId: id })}
+            onComplete={handleCompleteTask}
+            onDelete={handleDeleteTask}
           />
         ) : (
           <>
@@ -160,7 +202,13 @@ export default function App() {
               yesterdaySessions={state.yesterdaySessions}
             />
 
-            <TaskSection />
+            <TaskSection
+              tasks={state.tasks}
+              activeTaskId={state.activeTaskId}
+              onOpenManager={() => dispatch({ type: 'SET_VIEW', view: 'tasks' })}
+              onSelectTask={(id) => dispatch({ type: 'SET_ACTIVE_TASK', taskId: id })}
+              onCreateTask={handleCreateTask}
+            />
           </>
         )}
       </div>
