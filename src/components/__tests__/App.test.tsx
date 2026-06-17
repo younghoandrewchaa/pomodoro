@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
 
@@ -77,6 +77,53 @@ describe('App shell', () => {
     expect(screen.getByText('1/8')).toBeInTheDocument();
     expect(screen.getByText('1h 40m')).toBeInTheDocument();
     expect(screen.getByText('+15% vs yesterday')).toBeInTheDocument();
+  });
+
+  it('restores the active task from settings on startup', async () => {
+    const task = {
+      id: 'task-abc',
+      name: 'Restored Task',
+      createdAt: new Date().toISOString(),
+      status: 'active' as const,
+      totalSeconds: 300,
+      totalPomodoros: 1,
+    };
+    electronAPI.getSettings.mockResolvedValue({
+      focusMinutes: 25,
+      breakMinutes: 5,
+      lastOpenedDate: new Date().toISOString().slice(0, 10),
+      activeTaskId: task.id,
+    });
+    electronAPI.getAllTasks.mockResolvedValue([task]);
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Restored Task')).toBeInTheDocument();
+    });
+  });
+
+  it('persists activeTaskId to settings when a task is created and made active', async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Add New Task')).toBeInTheDocument();
+    });
+
+    screen.getByText('Add New Task').click();
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Task name…')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('Task name…'), { target: { value: 'My Task' } });
+    fireEvent.submit(screen.getByPlaceholderText('Task name…').closest('form')!);
+
+    await waitFor(() => {
+      expect(electronAPI.setSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ activeTaskId: 'task-1' }),
+      );
+    });
   });
 
   it('switches to the settings view via the sidebar nav', async () => {

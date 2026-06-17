@@ -22,10 +22,10 @@ const api = {
   getYesterdaySessions: (): Promise<Array<{ startedAt: string; durationSeconds: number }>> =>
     ipcRenderer.invoke('session:get-yesterday'),
 
-  getSettings: (): Promise<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string }> =>
+  getSettings: (): Promise<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string; activeTaskId: string | null }> =>
     ipcRenderer.invoke('settings:get'),
 
-  setSettings: (updates: Partial<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string }>) =>
+  setSettings: (updates: Partial<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string; activeTaskId: string | null }>) =>
     ipcRenderer.invoke('settings:set', updates),
 
   getAllTasks: (): Promise<Task[]> =>

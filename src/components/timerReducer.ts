@@ -44,7 +44,7 @@ export type Action =
   | { type: 'SET_ACTIVE_TASK'; taskId: string | null }
   | { type: 'SESSIONS_UPDATED'; sessions: SessionRecord[] }
   | { type: 'TASKS_UPDATED'; tasks: Task[] }
-  | { type: 'INIT'; focusMinutes: number; breakMinutes: number; sessions: SessionRecord[]; yesterdaySessions: SessionRecord[]; lastOpenedDate: string; tasks: Task[] };
+  | { type: 'INIT'; focusMinutes: number; breakMinutes: number; sessions: SessionRecord[]; yesterdaySessions: SessionRecord[]; lastOpenedDate: string; tasks: Task[]; activeTaskId: string | null };
 
 export function toSeconds(minutes: number) {
   return minutes * 60;
@@ -186,6 +186,7 @@ export function reducer(state: State, action: Action): State {
         todaySessions: action.sessions,
         yesterdaySessions: action.yesterdaySessions,
         tasks: action.tasks,
+        activeTaskId: action.activeTaskId,
         initialized: true,
       };
     }

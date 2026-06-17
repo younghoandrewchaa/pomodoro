@@ -14,8 +14,8 @@ declare global {
     recordSession: (session: { startedAt: string; durationSeconds: number }) => Promise<void>;
     getTodaySessions: () => Promise<Array<{ startedAt: string; durationSeconds: number }>>;
     getYesterdaySessions: () => Promise<Array<{ startedAt: string; durationSeconds: number }>>;
-    getSettings: () => Promise<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string }>;
-    setSettings: (updates: Partial<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string }>) => Promise<void>;
+    getSettings: () => Promise<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string; activeTaskId: string | null }>;
+    setSettings: (updates: Partial<{ focusMinutes: number; breakMinutes: number; lastOpenedDate: string; activeTaskId: string | null }>) => Promise<void>;
     getAllTasks: () => Promise<Task[]>;
     createTask: (name: string) => Promise<Task>;
     updateTask: (id: string, changes: Partial<Task>) => Promise<Task | null>;

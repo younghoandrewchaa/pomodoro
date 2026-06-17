@@ -30,6 +30,7 @@ export default function App() {
         sessions,
         yesterdaySessions,
         tasks,
+        activeTaskId: settings.activeTaskId,
       });
       await window.electronAPI.setSettings({ lastOpenedDate: new Date().toISOString().slice(0, 10) });
     })();
@@ -56,6 +57,12 @@ export default function App() {
   const totalSeconds = state.mode === 'focus'
     ? toSeconds(state.focusMinutes)
     : toSeconds(state.breakMinutes);
+
+  // Persist active task selection across restarts
+  useEffect(() => {
+    if (!state.initialized) return;
+    window.electronAPI.setSettings({ activeTaskId: state.activeTaskId });
+  }, [state.activeTaskId, state.initialized]);
 
   // Sync tray icon
   useEffect(() => {

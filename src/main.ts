@@ -14,6 +14,7 @@ interface Settings {
   focusMinutes: number;
   breakMinutes: number;
   lastOpenedDate: string;
+  activeTaskId: string | null;
 }
 
 interface SessionRecord {
@@ -27,6 +28,7 @@ const settingsStore = new Store<Settings>({
     focusMinutes: 20,
     breakMinutes: 5,
     lastOpenedDate: '',
+    activeTaskId: null,
   },
 });
 
@@ -172,6 +174,7 @@ function registerIpcHandlers() {
       focusMinutes: settingsStore.get('focusMinutes'),
       breakMinutes: settingsStore.get('breakMinutes'),
       lastOpenedDate: settingsStore.get('lastOpenedDate'),
+      activeTaskId: settingsStore.get('activeTaskId'),
     };
   });
 
@@ -179,6 +182,7 @@ function registerIpcHandlers() {
     if (updates.focusMinutes !== undefined) settingsStore.set('focusMinutes', updates.focusMinutes);
     if (updates.breakMinutes !== undefined) settingsStore.set('breakMinutes', updates.breakMinutes);
     if (updates.lastOpenedDate !== undefined) settingsStore.set('lastOpenedDate', updates.lastOpenedDate);
+    if (updates.activeTaskId !== undefined) settingsStore.set('activeTaskId', updates.activeTaskId);
   });
 
   ipcMain.handle('task:get-all', () => taskStore.get('tasks'));
