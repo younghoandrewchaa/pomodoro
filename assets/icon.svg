@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Body -->
+  <circle cx="512" cy="570" r="420" fill="#e53935"/>
+  <!-- Specular highlight -->
+  <ellipse cx="390" cy="390" rx="130" ry="90" fill="#ffffff" opacity="0.18"/>
+  <!-- Stem -->
+  <rect x="492" y="110" width="40" height="130" rx="20" fill="#2e7d32"/>
+  <!-- Left leaf -->
+  <ellipse cx="370" cy="210" rx="130" ry="46" fill="#43a047" transform="rotate(-35 370 210)"/>
+  <!-- Right leaf -->
+  <ellipse cx="660" cy="210" rx="130" ry="46" fill="#2e7d32" transform="rotate(35 660 210)"/>
+</svg>

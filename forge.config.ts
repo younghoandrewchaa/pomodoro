@@ -26,6 +26,7 @@ const shouldNotarize = Boolean(process.env.CI || process.env.APPLE_ID);
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    icon: './assets/icon',
     extraResource: ['./assets'],
     appBundleId: 'com.pomodoro.app',
     osxSign: {},

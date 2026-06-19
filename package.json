@@ -12,6 +12,7 @@
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
     "test": "vitest run",
+    "icons": "tsx scripts/create-icons.ts",
     "release": "tsx scripts/release.ts"
   },
   "keywords": [],
@@ -46,6 +47,7 @@
     "eslint-plugin-import": "^2.32.0",
     "jsdom": "^29.1.1",
     "playwright-core": "^1.61.0",
+    "sharp": "^0.35.2",
     "tsx": "^4.22.4",
     "typescript": "~5.6",
     "vite": "^5.4.21",
