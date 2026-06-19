@@ -9,7 +9,7 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
-type AppleCredentialName = 'APPLE_ID' | 'APPLE_ID_PASSWORD' | 'APPLE_TEAM_ID';
+type AppleCredentialName = 'APPLE_ID' | 'APPLE_APP_SPECIFIC_PASSWORD' | 'APPLE_TEAM_ID';
 
 const requireEnv = (name: AppleCredentialName): string => {
   const value = process.env[name];
@@ -32,7 +32,7 @@ const config: ForgeConfig = {
     osxNotarize: shouldNotarize
       ? {
           appleId: requireEnv('APPLE_ID'),
-          appleIdPassword: requireEnv('APPLE_ID_PASSWORD'),
+          appleIdPassword: requireEnv('APPLE_APP_SPECIFIC_PASSWORD'),
           teamId: requireEnv('APPLE_TEAM_ID'),
         }
       : undefined,
