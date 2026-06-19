@@ -1,6 +1,6 @@
 {
   "name": "pomodoro",
-  "productName": "pomodoro",
+  "productName": "Pomodoro",
   "version": "1.0.4",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
