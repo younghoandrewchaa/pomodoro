@@ -1,8 +1,18 @@
 # Pomodoro
 
-A macOS menu-bar Pomodoro timer built with Electron, React, and TypeScript.
+A macOS menu-bar Pomodoro timer built with Electron, React, and TypeScript. It lives in your menu bar and stays out of your way — click the icon to start a focus session, and the app handles the rest.
 
 <img width="812" height="712" alt="image" src="https://github.com/user-attachments/assets/b6414b95-f15e-4962-b47b-0caddf5a52d1" />
+
+## Features
+
+- **Menu-bar timer** — always accessible from the macOS menu bar; hides from the Dock entirely
+- **Focus & break modes** — configurable durations (5–60 min) with automatic transitions and macOS notifications
+- **Visual progress ring** — animated, color-coded circular indicator in the popover window
+- **Task management** — create tasks, attach focus sessions to them, and track pomodoros and total focus time per task
+- **Daily statistics** — session count, cumulative focus time, progress toward your daily goal, and a comparison to yesterday
+- **Persistent state** — settings, task list, and selected task survive app restarts; timer resets to focus mode on the first open of each day
+- **Auto-updates** — checks for new releases on startup and after each session, with a one-click in-app installer
 
 ## Development
 
