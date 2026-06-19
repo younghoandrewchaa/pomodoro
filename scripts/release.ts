@@ -24,7 +24,8 @@ function loadDotEnv(filePath: string): void {
 }
 
 function run(cmd: string, opts: { stdio?: 'inherit' | 'pipe' } = {}): string {
-  return execSync(cmd, { cwd: rootDir, stdio: 'pipe', ...opts }).toString().trim();
+  const result = execSync(cmd, { cwd: rootDir, stdio: 'pipe', ...opts });
+  return result ? result.toString().trim() : '';
 }
 
 function prompt(question: string): Promise<string> {
