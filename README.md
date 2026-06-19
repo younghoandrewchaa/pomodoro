@@ -2,6 +2,8 @@
 
 A macOS menu-bar Pomodoro timer built with Electron, React, and TypeScript.
 
+<img width="812" height="712" alt="image" src="https://github.com/user-attachments/assets/b6414b95-f15e-4962-b47b-0caddf5a52d1" />
+
 ## Development
 
 ```bash
