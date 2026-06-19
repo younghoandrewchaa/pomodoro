@@ -22,6 +22,8 @@ declare global {
     deleteTask: (id: string) => Promise<void>;
     recordTaskSession: (id: string, durationSeconds: number) => Promise<void>;
     quit: () => void;
+    onUpdateDownloaded: (callback: () => void) => void;
+    installUpdate: () => void;
   }
 
   interface Window {

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, ipcMain, screen } from 'electron';
+import { app, autoUpdater, BrowserWindow, Menu, Tray, ipcMain, screen } from 'electron';
 import { exec } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
@@ -55,6 +55,53 @@ const taskStore = new Store<{ tasks: Task[] }>({
 let tray: Tray | null = null;
 let popoverWindow: BrowserWindow | null = null;
 let trayIcons: ReturnType<typeof createTrayIcons> | null = null;
+let checkingForUpdate = false;
+
+function buildContextMenu(): Menu {
+  return Menu.buildFromTemplate([
+    { label: `Pomodoro v${app.getVersion()}`, enabled: false },
+    { type: 'separator' },
+    {
+      label: checkingForUpdate ? 'Checking…' : 'Check for Updates',
+      enabled: !checkingForUpdate,
+      click: () => {
+        if (!app.isPackaged) return;
+        checkingForUpdate = true;
+        tray?.popUpContextMenu(buildContextMenu());
+        autoUpdater.checkForUpdates();
+      },
+    },
+    { type: 'separator' },
+    { label: 'Quit', click: () => app.quit() },
+  ]);
+}
+
+function setupAutoUpdater(): void {
+  if (!app.isPackaged) return;
+
+  const feedURL = `https://update.electronjs.org/younghoandrewchaa/pomodoro/${process.platform}-${process.arch}/${app.getVersion()}`;
+  autoUpdater.setFeedURL({ url: feedURL });
+
+  autoUpdater.on('checking-for-update', () => {
+    checkingForUpdate = true;
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    checkingForUpdate = false;
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    checkingForUpdate = false;
+    popoverWindow?.webContents.send('update:downloaded');
+  });
+
+  autoUpdater.on('error', (err) => {
+    checkingForUpdate = false;
+    console.error('[auto-update] error:', err.message);
+  });
+
+  setTimeout(() => autoUpdater.checkForUpdates(), 3_000);
+}
 
 function showNotification(title: string, body: string) {
   if (process.platform !== 'darwin') return;
@@ -149,6 +196,9 @@ function registerIpcHandlers() {
     } else {
       showNotification('Break Over!', 'Time to get back to work.');
     }
+    if (app.isPackaged) {
+      autoUpdater.checkForUpdates();
+    }
   });
 
   ipcMain.handle('session:record', (_event, session: SessionRecord) => {
@@ -225,6 +275,10 @@ function registerIpcHandlers() {
   ipcMain.on('app:quit', () => {
     app.quit();
   });
+
+  ipcMain.on('update:install', () => {
+    autoUpdater.quitAndInstall();
+  });
 }
 
 app.on('ready', () => {
@@ -244,8 +298,13 @@ app.on('ready', () => {
     togglePopover();
   });
 
+  tray.on('right-click', () => {
+    tray?.popUpContextMenu(buildContextMenu());
+  });
+
   registerIpcHandlers();
   createPopoverWindow();
+  setupAutoUpdater();
 });
 
 app.on('window-all-closed', () => {

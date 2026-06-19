@@ -20,6 +20,8 @@ const electronAPI = {
   deleteTask: vi.fn().mockResolvedValue(undefined),
   recordTaskSession: vi.fn().mockResolvedValue(undefined),
   quit: vi.fn(),
+  onUpdateDownloaded: vi.fn(),
+  installUpdate: vi.fn(),
 };
 
 describe('App shell', () => {

@@ -44,6 +44,12 @@ const api = {
     ipcRenderer.invoke('task:record-session', { id, durationSeconds }),
 
   quit: () => ipcRenderer.send('app:quit'),
+
+  onUpdateDownloaded: (callback: () => void) => {
+    ipcRenderer.on('update:downloaded', () => callback());
+  },
+
+  installUpdate: () => ipcRenderer.send('update:install'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

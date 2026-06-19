@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, useState } from 'react';
 import TimerDisplay from './TimerDisplay';
 import ProgressBar from './ProgressBar';
 import ControlButtons from './ControlButtons';
@@ -7,11 +7,17 @@ import SettingsPanel from './SettingsPanel';
 import ModeLabel from './ModeLabel';
 import TaskSection from './TaskSection';
 import TaskManagerPanel from './TaskManagerPanel';
+import UpdateBanner from './UpdateBanner';
 import { reducer, initialState, toSeconds } from './timerReducer';
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [updateReady, setUpdateReady] = useState(false);
+
+  useEffect(() => {
+    window.electronAPI.onUpdateDownloaded(() => setUpdateReady(true));
+  }, []);
 
   // Load settings, sessions, and tasks on mount
   useEffect(() => {
@@ -139,6 +145,9 @@ export default function App() {
 
   return (
     <div className="app">
+      {updateReady && (
+        <UpdateBanner onInstall={() => window.electronAPI.installUpdate()} />
+      )}
       <nav className="sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-brand-title">Pomodoro</div>
