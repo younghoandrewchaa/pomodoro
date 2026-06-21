@@ -1,6 +1,6 @@
 {
   "name": "pomodoro",
-  "productName": "Pomodoro",
+  "productName": "Sprout",
   "version": "1.0.4",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
@@ -54,9 +54,9 @@
     "vitest": "^4.1.8"
   },
   "dependencies": {
-    "@fontsource/hanken-grotesk": "^5.2.8",
-    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/material-symbols-outlined": "^5.2.45",
+    "@fontsource/space-grotesk": "^5.2.10",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^11.0.2",
     "react": "^19.2.6",

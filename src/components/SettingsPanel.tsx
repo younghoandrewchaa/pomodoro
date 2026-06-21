@@ -48,7 +48,7 @@ export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, 
       <div className="settings-spacer" />
 
       <button className="quit-btn" onClick={onQuit}>
-        Quit Pomodoro
+        Quit Sprout
       </button>
     </div>
   );

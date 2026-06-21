@@ -65,7 +65,7 @@ let checkingForUpdate = false;
 
 function buildContextMenu(): Menu {
   return Menu.buildFromTemplate([
-    { label: `Pomodoro v${app.getVersion()}`, enabled: false },
+    { label: `Sprout v${app.getVersion()}`, enabled: false },
     { type: 'separator' },
     {
       label: checkingForUpdate ? 'Checking…' : 'Check for Updates',
@@ -127,7 +127,7 @@ function createPopoverWindow() {
     skipTaskbar: true,
     alwaysOnTop: true,
     transparent: false,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f6faf1',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -210,9 +210,9 @@ function registerIpcHandlers() {
       popoverWindow.focus();
     }
     if (mode === 'focus') {
-      showNotification('Focus Complete!', 'Time to take a break.');
+      showNotification('Sprout: Focus Complete', 'Your focus session is complete. Time to rest.');
     } else {
-      showNotification('Break Over!', 'Time to get back to work.');
+      showNotification('Sprout: Break Complete', 'Your break is over. Ready to grow again?');
     }
     if (app.isPackaged) {
       autoUpdater.checkForUpdates();
@@ -307,7 +307,7 @@ app.on('ready', () => {
 
   trayIcons = createTrayIcons();
   tray = new Tray(trayIcons.initial);
-  tray.setToolTip('Pomodoro');
+  tray.setToolTip('Sprout');
 
   if (process.platform === 'darwin') {
     tray.setIgnoreDoubleClickEvents(true);

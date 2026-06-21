@@ -43,12 +43,13 @@ describe('App shell', () => {
     const { container } = render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText('Pomodoro')).toBeInTheDocument();
+      expect(screen.getByText('Sprout')).toBeInTheDocument();
     });
 
     expect(container.querySelector('.sidebar')).toBeInTheDocument();
     expect(container.querySelector('.timer-ring-shell')).toBeInTheDocument();
     expect(container.querySelector('.progress-ring')).toBeInTheDocument();
+    expect(container.querySelector('#sprout-ring-gradient')).toBeInTheDocument();
     expect(container.querySelector('.sidebar-nav')).toBeInTheDocument();
   });
 
@@ -76,7 +77,7 @@ describe('App shell', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText('Sessions Today')).toBeInTheDocument();
+      expect(screen.getByText('Trees Today')).toBeInTheDocument();
     });
     expect(screen.getByText('1/8')).toBeInTheDocument();
     expect(screen.getByText('1h 40m')).toBeInTheDocument();
@@ -136,6 +137,7 @@ describe('App shell', () => {
     await waitFor(() => {
       expect(screen.getByText('Restored Task')).toBeInTheDocument();
     });
+    expect(document.querySelector('.sprout-mark')).toBeInTheDocument();
   });
 
   it('persists activeTaskId to settings when a task is created and made active', async () => {
@@ -165,7 +167,7 @@ describe('App shell', () => {
     const { container } = render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText('Pomodoro')).toBeInTheDocument();
+      expect(screen.getByText('Sprout')).toBeInTheDocument();
     });
 
     screen.getByText('Settings').click();
@@ -174,6 +176,6 @@ describe('App shell', () => {
       expect(screen.getByText('Focus Duration')).toBeInTheDocument();
     });
     expect(container.querySelector('.timer-ring-shell')).not.toBeInTheDocument();
-    expect(screen.getByText('Quit Pomodoro')).toBeInTheDocument();
+    expect(screen.getByText('Quit Sprout')).toBeInTheDocument();
   });
 });

@@ -20,7 +20,7 @@ describe('BrowserWindow webPreferences', () => {
 
   it('uses an opaque surface-toned window to avoid bright rounded-corner artifacts', () => {
     expect(src).toContain('transparent: false');
-    expect(src).toContain("backgroundColor: '#f9f9f9'");
+    expect(src).toContain("backgroundColor: '#f6faf1'");
     expect(src).not.toContain("vibrancy: 'popover'");
     expect(src).not.toContain('visualEffectState');
   });

@@ -4,7 +4,7 @@ import UpdateBanner from './UpdateBanner';
 
 describe('UpdateBanner', () => {
   it('renders the update message', () => {
-    render(<UpdateBanner onInstall={() => {}} />);
+    render(<UpdateBanner onInstall={vi.fn()} />);
     expect(screen.getByText('A new version is ready.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Restart to update' })).toBeInTheDocument();
   });

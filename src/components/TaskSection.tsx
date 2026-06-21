@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Task } from '../types';
 import { formatFocus } from './focusStats';
+import SproutMark from './SproutMark';
 
 type Props = {
   tasks: Task[];
@@ -43,7 +44,8 @@ export default function TaskSection({ tasks, activeTaskId, onOpenManager, onCrea
           <div className="task-card__body">
             <div className="task-card__name">{activeTask.name}</div>
             <div className="task-card__meta">
-              <span>🍅 {activeTask.totalPomodoros}</span>
+              <SproutMark />
+              <span>{activeTask.totalPomodoros}</span>
               <span className="task-card__meta-sep">·</span>
               <span>{formatFocus(activeTask.totalSeconds)}</span>
             </div>

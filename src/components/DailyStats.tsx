@@ -14,7 +14,7 @@ export default function DailyStats({ sessions, yesterdaySessions }: Props) {
       <div className="stat-card">
         <div className="stat-card__header stat-card__header--focus">
           <span className="material-symbols-outlined" aria-hidden="true">check_circle</span>
-          <span className="stat-card__label">Sessions Today</span>
+          <span className="stat-card__label">Trees Today</span>
         </div>
         <div className="stat-card__value">{stats.completed}/{stats.goal}</div>
         <div

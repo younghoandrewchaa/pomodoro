@@ -1,5 +1,6 @@
 import type { Task } from '../types';
 import { formatFocus } from './focusStats';
+import SproutMark from './SproutMark';
 
 type Props = {
   tasks: Task[];
@@ -47,7 +48,10 @@ export default function TaskManagerPanel({ tasks, activeTaskId, onBack, onSelect
               </button>
               <div className="task-row__info">
                 <div className="task-row__name">{task.name}</div>
-                <div className="task-row__stats">🍅 {task.totalPomodoros} · {formatFocus(task.totalSeconds)}</div>
+                <div className="task-row__stats">
+                  <SproutMark />
+                  <span>{task.totalPomodoros} · {formatFocus(task.totalSeconds)}</span>
+                </div>
               </div>
               <div className="task-row__actions">
                 <button
@@ -78,7 +82,10 @@ export default function TaskManagerPanel({ tasks, activeTaskId, onBack, onSelect
               <span className="material-symbols-outlined task-row__done-icon">check_circle</span>
               <div className="task-row__info">
                 <div className="task-row__name">{task.name}</div>
-                <div className="task-row__stats">🍅 {task.totalPomodoros} · {formatFocus(task.totalSeconds)}</div>
+                <div className="task-row__stats">
+                  <SproutMark />
+                  <span>{task.totalPomodoros} · {formatFocus(task.totalSeconds)}</span>
+                </div>
               </div>
               <div className="task-row__actions">
                 <button

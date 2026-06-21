@@ -157,8 +157,8 @@ export default function App() {
       )}
       <nav className="sidebar">
         <div className="sidebar-brand">
-          <div className="sidebar-brand-title">Pomodoro</div>
-          <div className="sidebar-brand-sub">Stay productive</div>
+          <div className="sidebar-brand-title">Sprout</div>
+          <div className="sidebar-brand-sub">Grow your focus</div>
         </div>
         <div className="sidebar-nav">
           <button
@@ -207,7 +207,12 @@ export default function App() {
                 />
                 <div className="timer-center">
                   <TimerDisplay secondsRemaining={state.secondsRemaining} />
-                  <ModeLabel mode={state.mode} />
+                  <ModeLabel
+                    mode={state.mode}
+                    isRunning={state.isRunning}
+                    secondsRemaining={state.secondsRemaining}
+                    totalSeconds={totalSeconds}
+                  />
                 </div>
               </div>
               <ControlButtons
