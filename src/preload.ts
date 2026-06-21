@@ -43,6 +43,12 @@ const api = {
   recordTaskSession: (id: string, durationSeconds: number): Promise<void> =>
     ipcRenderer.invoke('task:record-session', { id, durationSeconds }),
 
+  onDailyStatsRefresh: (callback: () => void): (() => void) => {
+    const listener = () => callback();
+    ipcRenderer.on('daily-stats:refresh', listener);
+    return () => ipcRenderer.removeListener('daily-stats:refresh', listener);
+  },
+
   quit: () => ipcRenderer.send('app:quit'),
 
   onUpdateDownloaded: (callback: () => void) => {

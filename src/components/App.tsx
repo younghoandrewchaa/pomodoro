@@ -19,6 +19,14 @@ export default function App() {
     window.electronAPI.onUpdateDownloaded(() => setUpdateReady(true));
   }, []);
 
+  useEffect(() => window.electronAPI.onDailyStatsRefresh(async () => {
+    const [sessions, yesterdaySessions] = await Promise.all([
+      window.electronAPI.getTodaySessions(),
+      window.electronAPI.getYesterdaySessions(),
+    ]);
+    dispatch({ type: 'DAILY_SESSIONS_UPDATED', sessions, yesterdaySessions });
+  }), []);
+
   // Load settings, sessions, and tasks on mount
   useEffect(() => {
     (async () => {
@@ -38,7 +46,6 @@ export default function App() {
         tasks,
         activeTaskId: settings.activeTaskId,
       });
-      await window.electronAPI.setSettings({ lastOpenedDate: new Date().toISOString().slice(0, 10) });
     })();
   }, []);
 

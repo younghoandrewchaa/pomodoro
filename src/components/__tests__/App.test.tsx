@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { act, render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
 
@@ -20,6 +20,7 @@ const electronAPI = {
   deleteTask: vi.fn().mockResolvedValue(undefined),
   recordTaskSession: vi.fn().mockResolvedValue(undefined),
   quit: vi.fn(),
+  onDailyStatsRefresh: vi.fn(),
   onUpdateDownloaded: vi.fn(),
   installUpdate: vi.fn(),
 };
@@ -30,6 +31,7 @@ describe('App shell', () => {
     electronAPI.getTodaySessions.mockResolvedValue([]);
     electronAPI.getYesterdaySessions.mockResolvedValue([]);
     electronAPI.getAllTasks.mockResolvedValue([]);
+    electronAPI.onDailyStatsRefresh.mockReturnValue(vi.fn());
     window.electronAPI = electronAPI;
   });
 
@@ -79,6 +81,37 @@ describe('App shell', () => {
     expect(screen.getByText('1/8')).toBeInTheDocument();
     expect(screen.getByText('1h 40m')).toBeInTheDocument();
     expect(screen.getByText('+15% vs yesterday')).toBeInTheDocument();
+  });
+
+  it('refreshes stale daily stats when the popover first opens on a new day', async () => {
+    const unsubscribe = vi.fn();
+    electronAPI.onDailyStatsRefresh.mockReturnValue(unsubscribe);
+    electronAPI.getTodaySessions
+      .mockResolvedValueOnce([
+        { startedAt: '2026-06-20T09:00:00.000Z', durationSeconds: 1500 },
+      ])
+      .mockResolvedValueOnce([]);
+    electronAPI.getYesterdaySessions
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { startedAt: '2026-06-20T09:00:00.000Z', durationSeconds: 1500 },
+      ]);
+
+    const { unmount } = render(<App />);
+
+    await waitFor(() => expect(screen.getByText('1/8')).toBeInTheDocument());
+    const refresh = electronAPI.onDailyStatsRefresh.mock.calls[0]?.[0];
+    expect(refresh).toBeTypeOf('function');
+
+    await act(async () => refresh());
+
+    await waitFor(() => expect(screen.getByText('0/8')).toBeInTheDocument());
+    expect(screen.getByText('0 min')).toBeInTheDocument();
+    expect(electronAPI.getTodaySessions).toHaveBeenCalledTimes(2);
+    expect(electronAPI.getYesterdaySessions).toHaveBeenCalledTimes(2);
+
+    unmount();
+    expect(unsubscribe).toHaveBeenCalledOnce();
   });
 
   it('restores the active task from settings on startup', async () => {

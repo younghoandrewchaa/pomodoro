@@ -49,3 +49,27 @@ describe('reducer – PLAY / PAUSE / RESET', () => {
     expect(state.secondsRemaining).toBe(toSeconds(DEFAULT_FOCUS));
   });
 });
+
+describe('reducer – DAILY_SESSIONS_UPDATED', () => {
+  it('replaces both daily session collections without changing timer state', () => {
+    const current = {
+      ...runningFocusState,
+      secondsRemaining: 300,
+      todaySessions: [{ startedAt: '2026-06-20T09:00:00.000Z', durationSeconds: 1200 }],
+      yesterdaySessions: [{ startedAt: '2026-06-19T09:00:00.000Z', durationSeconds: 600 }],
+    };
+    const sessions = [{ startedAt: '2026-06-21T09:00:00.000Z', durationSeconds: 1500 }];
+    const yesterdaySessions = [{ startedAt: '2026-06-20T09:00:00.000Z', durationSeconds: 1200 }];
+
+    const state = reducer(current, {
+      type: 'DAILY_SESSIONS_UPDATED',
+      sessions,
+      yesterdaySessions,
+    });
+
+    expect(state.todaySessions).toBe(sessions);
+    expect(state.yesterdaySessions).toBe(yesterdaySessions);
+    expect(state.isRunning).toBe(true);
+    expect(state.secondsRemaining).toBe(300);
+  });
+});

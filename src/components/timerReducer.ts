@@ -43,6 +43,7 @@ export type Action =
   | { type: 'SET_VIEW'; view: View }
   | { type: 'SET_ACTIVE_TASK'; taskId: string | null }
   | { type: 'SESSIONS_UPDATED'; sessions: SessionRecord[] }
+  | { type: 'DAILY_SESSIONS_UPDATED'; sessions: SessionRecord[]; yesterdaySessions: SessionRecord[] }
   | { type: 'TASKS_UPDATED'; tasks: Task[] }
   | { type: 'INIT'; focusMinutes: number; breakMinutes: number; sessions: SessionRecord[]; yesterdaySessions: SessionRecord[]; lastOpenedDate: string; tasks: Task[]; activeTaskId: string | null };
 
@@ -169,6 +170,13 @@ export function reducer(state: State, action: Action): State {
 
     case 'SESSIONS_UPDATED':
       return { ...state, todaySessions: action.sessions };
+
+    case 'DAILY_SESSIONS_UPDATED':
+      return {
+        ...state,
+        todaySessions: action.sessions,
+        yesterdaySessions: action.yesterdaySessions,
+      };
 
     case 'TASKS_UPDATED':
       return { ...state, tasks: action.tasks };

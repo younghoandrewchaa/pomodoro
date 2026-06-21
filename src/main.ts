@@ -4,6 +4,12 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import Store from 'electron-store';
+import {
+  isFirstOpenToday,
+  isTimestampOnLocalDate,
+  localDateKey,
+  previousLocalDate,
+} from './calendarDate';
 import { createTrayIcons, type TrayTimerState } from './tray-icons';
 
 if (started) {
@@ -167,12 +173,24 @@ function positionPopover() {
   popoverWindow.setPosition(x, y, false);
 }
 
+function refreshDailyStatsOnFirstOpen() {
+  if (!popoverWindow) return;
+
+  const now = new Date();
+  const lastOpenedDate = settingsStore.get('lastOpenedDate');
+  if (!isFirstOpenToday(lastOpenedDate, now)) return;
+
+  settingsStore.set('lastOpenedDate', localDateKey(now));
+  popoverWindow.webContents.send('daily-stats:refresh');
+}
+
 function togglePopover() {
   if (!popoverWindow) return;
 
   if (popoverWindow.isVisible()) {
     popoverWindow.hide();
   } else {
+    refreshDailyStatsOnFirstOpen();
     positionPopover();
     popoverWindow.show();
     popoverWindow.focus();
@@ -208,15 +226,16 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('session:get-today', () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date();
     const sessions = sessionStore.get('sessions');
-    return sessions.filter(s => s.startedAt.startsWith(today));
+    return sessions.filter(s => isTimestampOnLocalDate(s.startedAt, today));
   });
 
   ipcMain.handle('session:get-yesterday', () => {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const today = new Date();
+    const yesterday = previousLocalDate(today);
     const sessions = sessionStore.get('sessions');
-    return sessions.filter(s => s.startedAt.startsWith(yesterday));
+    return sessions.filter(s => isTimestampOnLocalDate(s.startedAt, yesterday));
   });
 
   ipcMain.handle('settings:get', () => {

@@ -28,3 +28,7 @@ Recent commits use short imperative summaries such as `Fix notification` or dire
 ## Security & Configuration Tips
 
 Keep Electron APIs behind `src/preload.ts` and expose only the minimal renderer surface on `window.electronAPI`. Do not commit local credentials, release tokens, or machine-specific packaging output.
+
+## Workspace Preferences
+
+Work directly in the current checkout. Do not create or use git worktrees for this repository.
