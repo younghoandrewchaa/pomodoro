@@ -9,15 +9,26 @@ import TaskSection from './TaskSection';
 import TaskManagerPanel from './TaskManagerPanel';
 import UpdateBanner from './UpdateBanner';
 import { reducer, initialState, toSeconds } from './timerReducer';
+import type { UpdateCheckStatus } from '../autoUpdate';
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [updateReady, setUpdateReady] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<UpdateCheckStatus | null>(null);
 
   useEffect(() => {
     window.electronAPI.onUpdateDownloaded(() => setUpdateReady(true));
   }, []);
+
+  useEffect(() => window.electronAPI.onUpdateCheckResult(setUpdateStatus), []);
+
+  // Auto-dismiss the update-check status after 5 seconds
+  useEffect(() => {
+    if (!updateStatus) return;
+    const timer = setTimeout(() => setUpdateStatus(null), 5000);
+    return () => clearTimeout(timer);
+  }, [updateStatus]);
 
   useEffect(() => window.electronAPI.onDailyStatsRefresh(async () => {
     const [sessions, yesterdaySessions] = await Promise.all([
@@ -187,6 +198,7 @@ export default function App() {
             onSetFocus={handleSetFocusDuration}
             onSetBreak={handleSetBreakDuration}
             onCheckForUpdates={() => window.electronAPI.checkForUpdates()}
+            updateStatus={updateStatus}
             onQuit={() => window.electronAPI.quit()}
           />
         ) : state.view === 'tasks' ? (

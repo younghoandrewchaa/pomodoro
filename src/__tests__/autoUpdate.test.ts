@@ -1,27 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { manualCheckDialog } from '../autoUpdate';
+import { manualCheckStatus } from '../autoUpdate';
 
-describe('manualCheckDialog', () => {
+describe('manualCheckStatus', () => {
   it('tells the user they are up to date when no update is available', () => {
-    const dialog = manualCheckDialog('not-available');
+    const dialog = manualCheckStatus('not-available');
     expect(dialog?.type).toBe('info');
     expect(dialog?.message).toMatch(/up to date/i);
   });
 
   it('reports a downloading update when one is available', () => {
-    const dialog = manualCheckDialog('available');
+    const dialog = manualCheckStatus('available');
     expect(dialog?.type).toBe('info');
     expect(dialog?.detail).toMatch(/download/i);
   });
 
   it('surfaces the underlying error message on failure', () => {
-    const dialog = manualCheckDialog('error', 'network unreachable');
+    const dialog = manualCheckStatus('error', 'network unreachable');
     expect(dialog?.type).toBe('error');
     expect(dialog?.detail).toContain('network unreachable');
   });
 
   it('falls back to a generic detail when no error message is provided', () => {
-    const dialog = manualCheckDialog('error');
+    const dialog = manualCheckStatus('error');
     expect(dialog?.type).toBe('error');
     expect(dialog?.detail).toBeTruthy();
   });

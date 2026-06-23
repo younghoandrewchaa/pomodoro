@@ -788,6 +788,24 @@ select:focus-visible {
   color: #fff;
 }
 
+.update-status {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  animation: update-status-fade-in 160ms ease-out;
+}
+
+.update-status--error {
+  color: #c0392b;
+}
+
+@keyframes update-status-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .quit-btn {
   width: 100%;
   margin-top: 10px;

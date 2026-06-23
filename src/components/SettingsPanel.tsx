@@ -1,3 +1,5 @@
+import type { UpdateCheckStatus } from '../autoUpdate';
+
 const DURATION_OPTIONS = [5, 10, 15, 20, 25, 30, 45, 60];
 
 type Props = {
@@ -6,10 +8,11 @@ type Props = {
   onSetFocus: (minutes: number) => void;
   onSetBreak: (minutes: number) => void;
   onCheckForUpdates: () => void;
+  updateStatus: UpdateCheckStatus | null;
   onQuit: () => void;
 };
 
-export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, onSetBreak, onCheckForUpdates, onQuit }: Props) {
+export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, onSetBreak, onCheckForUpdates, updateStatus, onQuit }: Props) {
   return (
     <div className="settings-panel">
       <h2 className="settings-title">Settings</h2>
@@ -51,6 +54,12 @@ export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, 
       <button className="update-check-btn" onClick={onCheckForUpdates}>
         Check for Updates
       </button>
+
+      {updateStatus && (
+        <p className={`update-status update-status--${updateStatus.type}`} role="status">
+          {updateStatus.message}
+        </p>
+      )}
 
       <button className="quit-btn" onClick={onQuit}>
         Quit Sprout

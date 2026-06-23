@@ -2,13 +2,16 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import SettingsPanel from '../SettingsPanel';
 
-function renderPanel(overrides: Partial<React.ComponentProps<typeof SettingsPanel>> = {}) {
-  const props = {
+type PanelProps = React.ComponentProps<typeof SettingsPanel>;
+
+function renderPanel(overrides: Partial<PanelProps> = {}) {
+  const props: PanelProps = {
     focusMinutes: 20,
     breakMinutes: 5,
     onSetFocus: vi.fn(),
     onSetBreak: vi.fn(),
     onCheckForUpdates: vi.fn(),
+    updateStatus: null,
     onQuit: vi.fn(),
     ...overrides,
   };

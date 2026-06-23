@@ -1,20 +1,20 @@
 export type ManualCheckResult = 'available' | 'not-available' | 'error';
 
-export interface UpdateDialogSpec {
+export interface UpdateCheckStatus {
   type: 'info' | 'error';
   message: string;
   detail?: string;
 }
 
 /**
- * Decide the dialog to show for a user-initiated "Check for Updates".
- * Returns null when no dialog is warranted (e.g. the download-complete case,
+ * Build the status shown for a user-initiated "Check for Updates".
+ * Returns null when nothing should be shown (e.g. the download-complete case,
  * which is surfaced by the in-app update banner instead).
  */
-export function manualCheckDialog(
+export function manualCheckStatus(
   result: ManualCheckResult,
   errorMessage?: string,
-): UpdateDialogSpec | null {
+): UpdateCheckStatus | null {
   switch (result) {
     case 'available':
       return {

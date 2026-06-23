@@ -1,4 +1,5 @@
 import type { Task } from './types';
+import type { UpdateCheckStatus } from './autoUpdate';
 
 export {};
 
@@ -26,6 +27,7 @@ declare global {
     onUpdateDownloaded: (callback: () => void) => void;
     installUpdate: () => void;
     checkForUpdates: () => void;
+    onUpdateCheckResult: (callback: (status: UpdateCheckStatus) => void) => () => void;
   }
 
   interface Window {

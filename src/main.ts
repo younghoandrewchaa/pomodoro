@@ -1,4 +1,4 @@
-import { app, autoUpdater, BrowserWindow, dialog, Menu, Tray, ipcMain, screen } from 'electron';
+import { app, autoUpdater, BrowserWindow, Menu, Tray, ipcMain, screen } from 'electron';
 import { exec } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
@@ -11,7 +11,7 @@ import {
   previousLocalDate,
 } from './calendarDate';
 import { createTrayIcons, type TrayTimerState } from './tray-icons';
-import { manualCheckDialog, type ManualCheckResult } from './autoUpdate';
+import { manualCheckStatus, type ManualCheckResult } from './autoUpdate';
 
 if (started) {
   app.quit();
@@ -65,18 +65,14 @@ let trayIcons: ReturnType<typeof createTrayIcons> | null = null;
 let checkingForUpdate = false;
 let manualUpdateCheck = false;
 
-function showUpdateDialog(result: ManualCheckResult, errorMessage?: string): void {
-  const spec = manualCheckDialog(result, errorMessage);
-  if (!spec) return;
-  // Show as a standalone dialog (no parent window). The popover hides on blur,
-  // so a dialog attached to it would disappear along with it.
-  dialog.showMessageBox(spec);
-}
-
 function showManualResult(result: ManualCheckResult, errorMessage?: string): void {
   if (!manualUpdateCheck) return;
   manualUpdateCheck = false;
-  showUpdateDialog(result, errorMessage);
+  const status = manualCheckStatus(result, errorMessage);
+  if (!status) return;
+  // Surface the result as inline text in the renderer (Settings screen),
+  // which auto-dismisses — no native popup.
+  popoverWindow?.webContents.send('update:check-result', status);
 }
 
 function triggerManualUpdateCheck(): void {

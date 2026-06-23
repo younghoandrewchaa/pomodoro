@@ -58,6 +58,15 @@ const api = {
   installUpdate: () => ipcRenderer.send('update:install'),
 
   checkForUpdates: () => ipcRenderer.send('update:check'),
+
+  onUpdateCheckResult: (
+    callback: (status: { type: 'info' | 'error'; message: string; detail?: string }) => void,
+  ): (() => void) => {
+    const listener = (_event: unknown, status: { type: 'info' | 'error'; message: string; detail?: string }) =>
+      callback(status);
+    ipcRenderer.on('update:check-result', listener);
+    return () => ipcRenderer.removeListener('update:check-result', listener);
+  },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

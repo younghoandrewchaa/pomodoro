@@ -24,6 +24,7 @@ const electronAPI = {
   onUpdateDownloaded: vi.fn(),
   installUpdate: vi.fn(),
   checkForUpdates: vi.fn(),
+  onUpdateCheckResult: vi.fn(),
 };
 
 describe('App shell', () => {
@@ -33,6 +34,7 @@ describe('App shell', () => {
     electronAPI.getYesterdaySessions.mockResolvedValue([]);
     electronAPI.getAllTasks.mockResolvedValue([]);
     electronAPI.onDailyStatsRefresh.mockReturnValue(vi.fn());
+    electronAPI.onUpdateCheckResult.mockReturnValue(vi.fn());
     window.electronAPI = electronAPI;
   });
 
@@ -114,6 +116,28 @@ describe('App shell', () => {
 
     unmount();
     expect(unsubscribe).toHaveBeenCalledOnce();
+  });
+
+  it('shows the update-check result inline in Settings and clears it after 5 seconds', async () => {
+    let emitStatus: ((status: { type: 'info' | 'error'; message: string }) => void) | undefined;
+    electronAPI.onUpdateCheckResult.mockImplementation((cb: (status: { type: 'info' | 'error'; message: string }) => void) => {
+      emitStatus = cb;
+      return vi.fn();
+    });
+
+    render(<App />);
+
+    const settingsNav = await screen.findByRole('button', { name: /settings/i });
+    fireEvent.click(settingsNav);
+    expect(screen.getByRole('button', { name: /check for updates/i })).toBeInTheDocument();
+
+    vi.useFakeTimers();
+
+    act(() => emitStatus?.({ type: 'info', message: 'You’re up to date' }));
+    expect(screen.getByRole('status')).toHaveTextContent(/up to date/i);
+
+    act(() => vi.advanceTimersByTime(5000));
+    expect(screen.queryByRole('status')).toBeNull();
   });
 
   it('restores the active task from settings on startup', async () => {

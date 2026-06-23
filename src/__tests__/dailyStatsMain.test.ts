@@ -48,11 +48,14 @@ describe('manual update check feedback', () => {
     expect(trigger).toContain("showManualResult('error'");
   });
 
-  it('surfaces a dialog only for manual checks via showManualResult', () => {
+  it('reports manual-check results as inline IPC, not a native dialog', () => {
     expect(src).toContain('if (!manualUpdateCheck) return;');
     expect(src).toContain("showManualResult('not-available')");
     expect(src).toContain("showManualResult('error', err.message)");
     expect(src).toContain("showManualResult('available')");
+    // Result is pushed to the renderer for inline display, with no native popup.
+    expect(src).toContain("webContents.send('update:check-result'");
+    expect(src).not.toContain('dialog.showMessageBox');
   });
 
   it('routes both the tray menu and the update:check IPC through one trigger', () => {

@@ -24,6 +24,7 @@ await import('../preload');
 type ExposedApi = {
   onDailyStatsRefresh: (callback: () => void) => () => void;
   checkForUpdates: () => void;
+  onUpdateCheckResult: (callback: (status: { type: string; message: string }) => void) => () => void;
 };
 
 describe('preload daily stats subscription', () => {
@@ -51,5 +52,21 @@ describe('preload daily stats subscription', () => {
     const api = electron.exposeInMainWorld.mock.calls[0][1] as ExposedApi;
     api.checkForUpdates();
     expect(electron.send).toHaveBeenCalledWith('update:check');
+  });
+
+  it('forwards update-check results and removes the exact IPC listener', () => {
+    const api = electron.exposeInMainWorld.mock.calls[0][1] as ExposedApi;
+    const callback = vi.fn();
+    const status = { type: 'info', message: 'You’re up to date' };
+
+    const unsubscribe = api.onUpdateCheckResult(callback);
+    const [channel, listener] = electron.on.mock.calls.at(-1) as [string, (event: unknown, status: unknown) => void];
+    expect(channel).toBe('update:check-result');
+
+    listener({}, status);
+    expect(callback).toHaveBeenCalledWith(status);
+
+    unsubscribe();
+    expect(electron.removeListener).toHaveBeenCalledWith('update:check-result', listener);
   });
 });
