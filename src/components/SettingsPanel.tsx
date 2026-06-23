@@ -51,15 +51,15 @@ export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, 
 
       <div className="settings-spacer" />
 
-      <button className="update-check-btn" onClick={onCheckForUpdates}>
-        Check for Updates
-      </button>
-
       {updateStatus && (
         <p className={`update-status update-status--${updateStatus.type}`} role="status">
           {updateStatus.message}
         </p>
       )}
+
+      <button className="update-check-btn" onClick={onCheckForUpdates}>
+        Check for Updates
+      </button>
 
       <button className="quit-btn" onClick={onQuit}>
         Quit Sprout
