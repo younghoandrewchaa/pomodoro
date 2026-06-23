@@ -23,6 +23,7 @@ const electronAPI = {
   onDailyStatsRefresh: vi.fn(),
   onUpdateDownloaded: vi.fn(),
   installUpdate: vi.fn(),
+  checkForUpdates: vi.fn(),
 };
 
 describe('App shell', () => {

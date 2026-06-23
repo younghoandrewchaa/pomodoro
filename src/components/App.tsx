@@ -186,6 +186,7 @@ export default function App() {
             breakMinutes={state.breakMinutes}
             onSetFocus={handleSetFocusDuration}
             onSetBreak={handleSetBreakDuration}
+            onCheckForUpdates={() => window.electronAPI.checkForUpdates()}
             onQuit={() => window.electronAPI.quit()}
           />
         ) : state.view === 'tasks' ? (

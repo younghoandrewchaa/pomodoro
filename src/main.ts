@@ -65,15 +65,29 @@ let trayIcons: ReturnType<typeof createTrayIcons> | null = null;
 let checkingForUpdate = false;
 let manualUpdateCheck = false;
 
+function showUpdateDialog(result: ManualCheckResult, errorMessage?: string): void {
+  const spec = manualCheckDialog(result, errorMessage);
+  if (!spec) return;
+  // Show as a standalone dialog (no parent window). The popover hides on blur,
+  // so a dialog attached to it would disappear along with it.
+  dialog.showMessageBox(spec);
+}
+
 function showManualResult(result: ManualCheckResult, errorMessage?: string): void {
   if (!manualUpdateCheck) return;
   manualUpdateCheck = false;
-  const spec = manualCheckDialog(result, errorMessage);
-  if (!spec) return;
-  if (popoverWindow) {
-    dialog.showMessageBox(popoverWindow, spec);
-  } else {
-    dialog.showMessageBox(spec);
+  showUpdateDialog(result, errorMessage);
+}
+
+function triggerManualUpdateCheck(): void {
+  checkingForUpdate = true;
+  manualUpdateCheck = true;
+  try {
+    autoUpdater.checkForUpdates();
+  } catch (err) {
+    // Unsigned/dev builds throw synchronously instead of emitting 'error'.
+    checkingForUpdate = false;
+    showManualResult('error', (err as Error).message);
   }
 }
 
@@ -85,11 +99,8 @@ function buildContextMenu(): Menu {
       label: checkingForUpdate ? 'Checking…' : 'Check for Updates',
       enabled: !checkingForUpdate,
       click: () => {
-        if (!app.isPackaged) return;
-        checkingForUpdate = true;
-        manualUpdateCheck = true;
+        triggerManualUpdateCheck();
         tray?.popUpContextMenu(buildContextMenu());
-        autoUpdater.checkForUpdates();
       },
     },
     { type: 'separator' },
@@ -98,10 +109,14 @@ function buildContextMenu(): Menu {
 }
 
 function setupAutoUpdater(): void {
-  if (!app.isPackaged) return;
-
   const feedURL = `https://update.electronjs.org/younghoandrewchaa/pomodoro/${process.platform}-${process.arch}/${app.getVersion()}`;
-  autoUpdater.setFeedURL({ url: feedURL });
+  try {
+    autoUpdater.setFeedURL({ url: feedURL });
+  } catch (err) {
+    // Unsigned/dev builds can't set a Squirrel feed URL — log and carry on so
+    // the manual check still surfaces a useful error when invoked.
+    console.error('[auto-update] setFeedURL failed:', (err as Error).message);
+  }
 
   autoUpdater.on('checking-for-update', () => {
     checkingForUpdate = true;
@@ -132,7 +147,13 @@ function setupAutoUpdater(): void {
     showManualResult('error', err.message);
   });
 
-  setTimeout(() => autoUpdater.checkForUpdates(), 3_000);
+  setTimeout(() => {
+    try {
+      autoUpdater.checkForUpdates();
+    } catch (err) {
+      console.error('[auto-update] startup check failed:', (err as Error).message);
+    }
+  }, 3_000);
 }
 
 function showNotification(title: string, body: string) {
@@ -315,6 +336,10 @@ function registerIpcHandlers() {
     tasks[idx].totalSeconds += durationSeconds;
     tasks[idx].totalPomodoros += 1;
     taskStore.set('tasks', tasks);
+  });
+
+  ipcMain.on('update:check', () => {
+    triggerManualUpdateCheck();
   });
 
   ipcMain.on('app:quit', () => {

@@ -770,9 +770,27 @@ select:focus-visible {
   flex: 1;
 }
 
-.quit-btn {
+.update-check-btn {
   width: 100%;
   margin-top: 20px;
+  padding: 11px;
+  border: 1px solid #bfd6b4;
+  border-radius: 11px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.update-check-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.quit-btn {
+  width: 100%;
+  margin-top: 10px;
   padding: 11px;
   border: 1px solid #bfd6b4;
   border-radius: 11px;

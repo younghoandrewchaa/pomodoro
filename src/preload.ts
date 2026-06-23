@@ -56,6 +56,8 @@ const api = {
   },
 
   installUpdate: () => ipcRenderer.send('update:install'),
+
+  checkForUpdates: () => ipcRenderer.send('update:check'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

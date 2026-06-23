@@ -25,6 +25,7 @@ declare global {
     quit: () => void;
     onUpdateDownloaded: (callback: () => void) => void;
     installUpdate: () => void;
+    checkForUpdates: () => void;
   }
 
   interface Window {

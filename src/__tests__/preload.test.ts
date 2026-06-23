@@ -23,6 +23,7 @@ await import('../preload');
 
 type ExposedApi = {
   onDailyStatsRefresh: (callback: () => void) => () => void;
+  checkForUpdates: () => void;
 };
 
 describe('preload daily stats subscription', () => {
@@ -44,5 +45,11 @@ describe('preload daily stats subscription', () => {
 
     unsubscribe();
     expect(electron.removeListener).toHaveBeenCalledWith('daily-stats:refresh', listener);
+  });
+
+  it('requests a manual update check over the update:check channel', () => {
+    const api = electron.exposeInMainWorld.mock.calls[0][1] as ExposedApi;
+    api.checkForUpdates();
+    expect(electron.send).toHaveBeenCalledWith('update:check');
   });
 });

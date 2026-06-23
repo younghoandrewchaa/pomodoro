@@ -5,10 +5,11 @@ type Props = {
   breakMinutes: number;
   onSetFocus: (minutes: number) => void;
   onSetBreak: (minutes: number) => void;
+  onCheckForUpdates: () => void;
   onQuit: () => void;
 };
 
-export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, onSetBreak, onQuit }: Props) {
+export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, onSetBreak, onCheckForUpdates, onQuit }: Props) {
   return (
     <div className="settings-panel">
       <h2 className="settings-title">Settings</h2>
@@ -46,6 +47,10 @@ export default function SettingsPanel({ focusMinutes, breakMinutes, onSetFocus, 
       </div>
 
       <div className="settings-spacer" />
+
+      <button className="update-check-btn" onClick={onCheckForUpdates}>
+        Check for Updates
+      </button>
 
       <button className="quit-btn" onClick={onQuit}>
         Quit Sprout

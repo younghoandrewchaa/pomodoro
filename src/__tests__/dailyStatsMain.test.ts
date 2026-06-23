@@ -29,13 +29,23 @@ describe('first daily tray open', () => {
 
 describe('manual update check feedback', () => {
   it('flags a user-initiated check before asking the updater', () => {
-    const menuClick = src.slice(
-      src.indexOf("label: checkingForUpdate"),
-      src.indexOf("{ type: 'separator' },\n    { label: 'Quit'"),
+    const trigger = src.slice(
+      src.indexOf('function triggerManualUpdateCheck()'),
+      src.indexOf('function buildContextMenu()'),
     );
-    expect(menuClick).toContain('manualUpdateCheck = true;');
-    expect(menuClick.indexOf('manualUpdateCheck = true;'))
-      .toBeLessThan(menuClick.indexOf('autoUpdater.checkForUpdates()'));
+    expect(trigger).toContain('manualUpdateCheck = true;');
+    expect(trigger.indexOf('manualUpdateCheck = true;'))
+      .toBeLessThan(trigger.indexOf('autoUpdater.checkForUpdates()'));
+  });
+
+  it('runs the check regardless of packaging and reports synchronous failures', () => {
+    const trigger = src.slice(
+      src.indexOf('function triggerManualUpdateCheck()'),
+      src.indexOf('function buildContextMenu()'),
+    );
+    expect(trigger).not.toContain('app.isPackaged');
+    expect(trigger).toContain('autoUpdater.checkForUpdates()');
+    expect(trigger).toContain("showManualResult('error'");
   });
 
   it('surfaces a dialog only for manual checks via showManualResult', () => {
@@ -43,6 +53,14 @@ describe('manual update check feedback', () => {
     expect(src).toContain("showManualResult('not-available')");
     expect(src).toContain("showManualResult('error', err.message)");
     expect(src).toContain("showManualResult('available')");
+  });
+
+  it('routes both the tray menu and the update:check IPC through one trigger', () => {
+    expect(src).toContain("ipcMain.on('update:check'");
+    expect(src).toContain('function triggerManualUpdateCheck()');
+    // The IPC handler and the tray menu click both call the shared trigger.
+    const triggerCalls = src.match(/triggerManualUpdateCheck\(\)/g) ?? [];
+    expect(triggerCalls.length).toBeGreaterThanOrEqual(3); // definition + tray + IPC
   });
 });
 
