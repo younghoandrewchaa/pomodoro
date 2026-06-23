@@ -27,6 +27,25 @@ describe('first daily tray open', () => {
   });
 });
 
+describe('manual update check feedback', () => {
+  it('flags a user-initiated check before asking the updater', () => {
+    const menuClick = src.slice(
+      src.indexOf("label: checkingForUpdate"),
+      src.indexOf("{ type: 'separator' },\n    { label: 'Quit'"),
+    );
+    expect(menuClick).toContain('manualUpdateCheck = true;');
+    expect(menuClick.indexOf('manualUpdateCheck = true;'))
+      .toBeLessThan(menuClick.indexOf('autoUpdater.checkForUpdates()'));
+  });
+
+  it('surfaces a dialog only for manual checks via showManualResult', () => {
+    expect(src).toContain('if (!manualUpdateCheck) return;');
+    expect(src).toContain("showManualResult('not-available')");
+    expect(src).toContain("showManualResult('error', err.message)");
+    expect(src).toContain("showManualResult('available')");
+  });
+});
+
 describe('daily session queries', () => {
   it('filters today and yesterday using local calendar dates', () => {
     expect(src).toContain('isTimestampOnLocalDate(s.startedAt, today)');

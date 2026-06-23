@@ -1,4 +1,4 @@
-import { app, autoUpdater, BrowserWindow, Menu, Tray, ipcMain, screen } from 'electron';
+import { app, autoUpdater, BrowserWindow, dialog, Menu, Tray, ipcMain, screen } from 'electron';
 import { exec } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
@@ -11,6 +11,7 @@ import {
   previousLocalDate,
 } from './calendarDate';
 import { createTrayIcons, type TrayTimerState } from './tray-icons';
+import { manualCheckDialog, type ManualCheckResult } from './autoUpdate';
 
 if (started) {
   app.quit();
@@ -62,6 +63,19 @@ let tray: Tray | null = null;
 let popoverWindow: BrowserWindow | null = null;
 let trayIcons: ReturnType<typeof createTrayIcons> | null = null;
 let checkingForUpdate = false;
+let manualUpdateCheck = false;
+
+function showManualResult(result: ManualCheckResult, errorMessage?: string): void {
+  if (!manualUpdateCheck) return;
+  manualUpdateCheck = false;
+  const spec = manualCheckDialog(result, errorMessage);
+  if (!spec) return;
+  if (popoverWindow) {
+    dialog.showMessageBox(popoverWindow, spec);
+  } else {
+    dialog.showMessageBox(spec);
+  }
+}
 
 function buildContextMenu(): Menu {
   return Menu.buildFromTemplate([
@@ -73,6 +87,7 @@ function buildContextMenu(): Menu {
       click: () => {
         if (!app.isPackaged) return;
         checkingForUpdate = true;
+        manualUpdateCheck = true;
         tray?.popUpContextMenu(buildContextMenu());
         autoUpdater.checkForUpdates();
       },
@@ -90,20 +105,31 @@ function setupAutoUpdater(): void {
 
   autoUpdater.on('checking-for-update', () => {
     checkingForUpdate = true;
+    console.log('[auto-update] checking for update');
+  });
+
+  autoUpdater.on('update-available', () => {
+    console.log('[auto-update] update available — downloading');
+    showManualResult('available');
   });
 
   autoUpdater.on('update-not-available', () => {
     checkingForUpdate = false;
+    console.log('[auto-update] no update available');
+    showManualResult('not-available');
   });
 
   autoUpdater.on('update-downloaded', () => {
     checkingForUpdate = false;
+    manualUpdateCheck = false;
+    console.log('[auto-update] update downloaded');
     popoverWindow?.webContents.send('update:downloaded');
   });
 
   autoUpdater.on('error', (err) => {
     checkingForUpdate = false;
     console.error('[auto-update] error:', err.message);
+    showManualResult('error', err.message);
   });
 
   setTimeout(() => autoUpdater.checkForUpdates(), 3_000);
