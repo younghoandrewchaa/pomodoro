@@ -118,6 +118,30 @@ describe('App shell', () => {
     expect(unsubscribe).toHaveBeenCalledOnce();
   });
 
+  it('renders the update banner as a full-width top bar above the layout body', async () => {
+    let notifyDownloaded: (() => void) | undefined;
+    electronAPI.onUpdateDownloaded.mockImplementation((cb: () => void) => {
+      notifyDownloaded = cb;
+    });
+
+    const { container } = render(<App />);
+    await waitFor(() => expect(screen.getByText('Sprout')).toBeInTheDocument());
+
+    act(() => notifyDownloaded?.());
+
+    const banner = container.querySelector('.update-banner');
+    const appBody = container.querySelector('.app-body');
+    expect(banner).toBeInTheDocument();
+    expect(appBody).toBeInTheDocument();
+
+    // Banner is a direct child of .app, stacked above the body — not wedged into the row.
+    expect(banner?.parentElement).toHaveClass('app');
+    expect(appBody?.contains(banner as Node)).toBe(false);
+    // The two-column layout lives inside .app-body.
+    expect(appBody?.querySelector('.sidebar')).toBeInTheDocument();
+    expect(appBody?.querySelector('.main-content')).toBeInTheDocument();
+  });
+
   it('shows the update-check result inline in Settings and clears it after 5 seconds', async () => {
     let emitStatus: ((status: { type: 'info' | 'error'; message: string }) => void) | undefined;
     electronAPI.onUpdateCheckResult.mockImplementation((cb: (status: { type: 'info' | 'error'; message: string }) => void) => {

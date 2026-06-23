@@ -167,92 +167,94 @@ export default function App() {
       {updateReady && (
         <UpdateBanner onInstall={() => window.electronAPI.installUpdate()} />
       )}
-      <nav className="sidebar">
-        <div className="sidebar-brand">
-          <div className="sidebar-brand-title">Sprout</div>
-          <div className="sidebar-brand-sub">Grow your focus</div>
-        </div>
-        <div className="sidebar-nav">
-          <button
-            className={`sidebar-nav__item${state.view === 'timer' ? ' sidebar-nav__item--active' : ''}`}
-            onClick={() => dispatch({ type: 'SET_VIEW', view: 'timer' })}
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">timer</span>
-            Timer
-          </button>
-          <button
-            className={`sidebar-nav__item${state.view === 'settings' ? ' sidebar-nav__item--active' : ''}`}
-            onClick={() => dispatch({ type: 'SET_VIEW', view: 'settings' })}
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">settings</span>
-            Settings
-          </button>
-        </div>
-      </nav>
+      <div className="app-body">
+        <nav className="sidebar">
+          <div className="sidebar-brand">
+            <div className="sidebar-brand-title">Sprout</div>
+            <div className="sidebar-brand-sub">Grow your focus</div>
+          </div>
+          <div className="sidebar-nav">
+            <button
+              className={`sidebar-nav__item${state.view === 'timer' ? ' sidebar-nav__item--active' : ''}`}
+              onClick={() => dispatch({ type: 'SET_VIEW', view: 'timer' })}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">timer</span>
+              Timer
+            </button>
+            <button
+              className={`sidebar-nav__item${state.view === 'settings' ? ' sidebar-nav__item--active' : ''}`}
+              onClick={() => dispatch({ type: 'SET_VIEW', view: 'settings' })}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">settings</span>
+              Settings
+            </button>
+          </div>
+        </nav>
 
-      <div className="main-content">
-        {state.view === 'settings' ? (
-          <SettingsPanel
-            focusMinutes={state.focusMinutes}
-            breakMinutes={state.breakMinutes}
-            onSetFocus={handleSetFocusDuration}
-            onSetBreak={handleSetBreakDuration}
-            onCheckForUpdates={() => window.electronAPI.checkForUpdates()}
-            updateStatus={updateStatus}
-            onQuit={() => window.electronAPI.quit()}
-          />
-        ) : state.view === 'tasks' ? (
-          <TaskManagerPanel
-            tasks={state.tasks}
-            activeTaskId={state.activeTaskId}
-            onBack={() => dispatch({ type: 'SET_VIEW', view: 'timer' })}
-            onSelect={(id) => dispatch({ type: 'SET_ACTIVE_TASK', taskId: id })}
-            onComplete={handleCompleteTask}
-            onDelete={handleDeleteTask}
-          />
-        ) : (
-          <>
-            <main className="timer-stage">
-              <div className="timer-ring-shell">
-                <ProgressBar
-                  secondsRemaining={state.secondsRemaining}
-                  totalSeconds={totalSeconds}
-                  mode={state.mode}
-                />
-                <div className="timer-center">
-                  <TimerDisplay secondsRemaining={state.secondsRemaining} />
-                  <ModeLabel
-                    mode={state.mode}
-                    isRunning={state.isRunning}
-                    secondsRemaining={state.secondsRemaining}
-                    totalSeconds={totalSeconds}
-                  />
-                </div>
-              </div>
-              <ControlButtons
-                isRunning={state.isRunning}
-                mode={state.mode}
-                onPlay={() => dispatch({ type: 'PLAY' })}
-                onPause={() => dispatch({ type: 'PAUSE' })}
-                onReset={() => dispatch({ type: 'RESET' })}
-                onSkip={handleSkip}
-              />
-            </main>
-
-            <DailyStats
-              sessions={state.todaySessions}
-              yesterdaySessions={state.yesterdaySessions}
+        <div className="main-content">
+          {state.view === 'settings' ? (
+            <SettingsPanel
+              focusMinutes={state.focusMinutes}
+              breakMinutes={state.breakMinutes}
+              onSetFocus={handleSetFocusDuration}
+              onSetBreak={handleSetBreakDuration}
+              onCheckForUpdates={() => window.electronAPI.checkForUpdates()}
+              updateStatus={updateStatus}
+              onQuit={() => window.electronAPI.quit()}
             />
-
-            <TaskSection
+          ) : state.view === 'tasks' ? (
+            <TaskManagerPanel
               tasks={state.tasks}
               activeTaskId={state.activeTaskId}
-              onOpenManager={() => dispatch({ type: 'SET_VIEW', view: 'tasks' })}
-              onSelectTask={(id) => dispatch({ type: 'SET_ACTIVE_TASK', taskId: id })}
-              onCreateTask={handleCreateTask}
+              onBack={() => dispatch({ type: 'SET_VIEW', view: 'timer' })}
+              onSelect={(id) => dispatch({ type: 'SET_ACTIVE_TASK', taskId: id })}
+              onComplete={handleCompleteTask}
+              onDelete={handleDeleteTask}
             />
-          </>
-        )}
+          ) : (
+            <>
+              <main className="timer-stage">
+                <div className="timer-ring-shell">
+                  <ProgressBar
+                    secondsRemaining={state.secondsRemaining}
+                    totalSeconds={totalSeconds}
+                    mode={state.mode}
+                  />
+                  <div className="timer-center">
+                    <TimerDisplay secondsRemaining={state.secondsRemaining} />
+                    <ModeLabel
+                      mode={state.mode}
+                      isRunning={state.isRunning}
+                      secondsRemaining={state.secondsRemaining}
+                      totalSeconds={totalSeconds}
+                    />
+                  </div>
+                </div>
+                <ControlButtons
+                  isRunning={state.isRunning}
+                  mode={state.mode}
+                  onPlay={() => dispatch({ type: 'PLAY' })}
+                  onPause={() => dispatch({ type: 'PAUSE' })}
+                  onReset={() => dispatch({ type: 'RESET' })}
+                  onSkip={handleSkip}
+                />
+              </main>
+
+              <DailyStats
+                sessions={state.todaySessions}
+                yesterdaySessions={state.yesterdaySessions}
+              />
+
+              <TaskSection
+                tasks={state.tasks}
+                activeTaskId={state.activeTaskId}
+                onOpenManager={() => dispatch({ type: 'SET_VIEW', view: 'tasks' })}
+                onSelectTask={(id) => dispatch({ type: 'SET_ACTIVE_TASK', taskId: id })}
+                onCreateTask={handleCreateTask}
+              />
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
