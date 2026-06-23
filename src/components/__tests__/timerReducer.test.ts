@@ -50,6 +50,29 @@ describe('reducer – PLAY / PAUSE / RESET', () => {
   });
 });
 
+describe('reducer – DAY_RESET', () => {
+  it('resets an idle break-mode timer back to focus on the first open of a new day', () => {
+    const leftInBreak = {
+      ...initialState,
+      mode: 'break' as const,
+      secondsRemaining: toSeconds(DEFAULT_BREAK),
+    };
+    const state = reducer(leftInBreak, { type: 'DAY_RESET' });
+    expect(state.mode).toBe('focus');
+    expect(state.secondsRemaining).toBe(toSeconds(DEFAULT_FOCUS));
+    expect(state.isRunning).toBe(false);
+    expect(state.sessionStartedAt).toBeNull();
+  });
+
+  it('leaves a running session untouched', () => {
+    const running = { ...runningFocusState, secondsRemaining: 300 };
+    const state = reducer(running, { type: 'DAY_RESET' });
+    expect(state.isRunning).toBe(true);
+    expect(state.mode).toBe('focus');
+    expect(state.secondsRemaining).toBe(300);
+  });
+});
+
 describe('reducer – DAILY_SESSIONS_UPDATED', () => {
   it('replaces both daily session collections without changing timer state', () => {
     const current = {

@@ -37,6 +37,7 @@ export type Action =
   | { type: 'RESET' }
   | { type: 'SKIP_TO_BREAK' }
   | { type: 'SKIP_TO_FOCUS' }
+  | { type: 'DAY_RESET' }
   | { type: 'CLEAR_PENDING_COMPLETION' }
   | { type: 'SET_FOCUS_DURATION'; minutes: number }
   | { type: 'SET_BREAK_DURATION'; minutes: number }
@@ -135,6 +136,18 @@ export function reducer(state: State, action: Action): State {
         ...state,
         mode: 'focus',
         secondsRemaining: toSeconds(state.focusMinutes),
+        sessionStartedAt: null,
+      };
+
+    case 'DAY_RESET':
+      // First open of a new day: an idle timer should be ready for focus.
+      // Leave a session that is actively running (e.g. across midnight) alone.
+      if (state.isRunning) return state;
+      return {
+        ...state,
+        mode: 'focus',
+        secondsRemaining: toSeconds(state.focusMinutes),
+        isRunning: false,
         sessionStartedAt: null,
       };
 

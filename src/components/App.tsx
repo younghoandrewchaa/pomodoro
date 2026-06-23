@@ -24,6 +24,7 @@ export default function App() {
       window.electronAPI.getTodaySessions(),
       window.electronAPI.getYesterdaySessions(),
     ]);
+    dispatch({ type: 'DAY_RESET' });
     dispatch({ type: 'DAILY_SESSIONS_UPDATED', sessions, yesterdaySessions });
   }), []);
 
