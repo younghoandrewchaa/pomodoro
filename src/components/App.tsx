@@ -210,6 +210,7 @@ export default function App() {
               onSelect={(id) => dispatch({ type: 'SET_ACTIVE_TASK', taskId: id })}
               onComplete={handleCompleteTask}
               onDelete={handleDeleteTask}
+              onCreateTask={handleCreateTask}
             />
           ) : (
             <>

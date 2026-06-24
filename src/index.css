@@ -628,6 +628,7 @@ select:focus-visible {
 }
 
 .task-manager__section {
+  margin-top: 16px;
   margin-bottom: 22px;
 }
 

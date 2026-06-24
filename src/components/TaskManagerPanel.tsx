@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Task } from '../types';
 import { formatFocus } from './focusStats';
 import SproutMark from './SproutMark';
@@ -9,11 +10,27 @@ type Props = {
   onSelect: (id: string) => void;
   onComplete: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onCreateTask: (name: string) => Promise<void>;
 };
 
-export default function TaskManagerPanel({ tasks, activeTaskId, onBack, onSelect, onComplete, onDelete }: Props) {
+export default function TaskManagerPanel({ tasks, activeTaskId, onBack, onSelect, onComplete, onDelete, onCreateTask }: Props) {
+  const [showForm, setShowForm] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
   const activeTasks = tasks.filter(t => t.status === 'active');
   const completedTasks = tasks.filter(t => t.status === 'completed');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = inputValue.trim();
+    if (!name) return;
+    setSubmitting(true);
+    await onCreateTask(name);
+    setInputValue('');
+    setShowForm(false);
+    setSubmitting(false);
+  };
 
   return (
     <div className="task-manager">
@@ -24,8 +41,33 @@ export default function TaskManagerPanel({ tasks, activeTaskId, onBack, onSelect
         <h2 className="task-manager__title">Tasks</h2>
       </div>
 
+      {showForm ? (
+        <form className="task-form" onSubmit={handleSubmit}>
+          <input
+            className="task-form__input"
+            type="text"
+            placeholder="Task name…"
+            value={inputValue}
+            onChange={e => setInputValue(e.target.value)}
+            autoFocus
+            disabled={submitting}
+          />
+          <button className="task-form__submit" type="submit" disabled={submitting || !inputValue.trim()}>
+            Add
+          </button>
+          <button className="task-form__cancel" type="button" onClick={() => { setShowForm(false); setInputValue(''); }}>
+            ✕
+          </button>
+        </form>
+      ) : (
+        <button className="add-task-btn" onClick={() => setShowForm(true)}>
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>add</span>
+          Add New Task
+        </button>
+      )}
+
       {activeTasks.length === 0 && completedTasks.length === 0 && (
-        <p className="task-manager__empty">No tasks yet. Add one from the timer view.</p>
+        <p className="task-manager__empty">No tasks yet.</p>
       )}
 
       {activeTasks.length > 0 && (
