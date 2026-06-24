@@ -77,6 +77,7 @@ export default function TaskManagerPanel({ tasks, activeTaskId, onBack, onSelect
             <div
               key={task.id}
               className={`task-row${task.id === activeTaskId ? ' task-row--selected' : ''}`}
+              onClick={() => onSelect(task.id)}
             >
               <button
                 className="task-row__select"
@@ -98,14 +99,14 @@ export default function TaskManagerPanel({ tasks, activeTaskId, onBack, onSelect
               <div className="task-row__actions">
                 <button
                   className="task-row__btn task-row__btn--done"
-                  onClick={() => onComplete(task.id)}
+                  onClick={e => { e.stopPropagation(); onComplete(task.id); }}
                   title="Mark complete"
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: 16 }}>check</span>
                 </button>
                 <button
                   className="task-row__btn task-row__btn--delete"
-                  onClick={() => onDelete(task.id)}
+                  onClick={e => { e.stopPropagation(); onDelete(task.id); }}
                   title="Delete"
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
